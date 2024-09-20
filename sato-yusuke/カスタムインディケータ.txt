@@ -6,8 +6,8 @@ BVPS = request.financial(syminfo.tickerid, "BOOK_VALUE_PER_SHARE", "FQ")
 PriceBookRatio = close / BVPS
 plotshape(PriceEarningsRatio < 1.5,text = "PER1.5以下",show_last = 1,location = location.bottom,style=shape.labeldown, color = color.yellow,textcolor = color.black)
 plotshape(PriceEarningsRatio > 1.5,text = "PER1.5以上",show_last = 1,location = location.bottom,style=shape.labeldown, color = color.yellow,textcolor = color.black)
-plotshape(PriceBookRatio < 20,text = "PBR20以下",show_last = 1,location = location.bottom,style=shape.labeldown, color = color.yellow,textcolor = color.black)
-plotshape(PriceBookRatio > 20,text = "PBR20以上",show_last = 1,location = location.bottom,style=shape.labeldown, color = color.yellow,textcolor = color.black)
+plotshape(PriceBookRatio < 20,text = "PBR20未満",show_last = 1,location = location.bottom,style=shape.labeldown, color = color.yellow,textcolor = color.black)
+plotshape(PriceBookRatio > 19,text = "PBR20以上",show_last = 1,location = location.bottom,style=shape.labeldown, color = color.yellow,textcolor = color.black)
 
 printTable(txt) => var table t = table.new(position.middle_right, 1, 1), table.cell(t, 0, 0, txt, bgcolor = color.yellow)
 printTable("PER\n" + str.tostring(PriceEarningsRatio) + "\nPBR\n" + str.tostring(PriceBookRatio))
