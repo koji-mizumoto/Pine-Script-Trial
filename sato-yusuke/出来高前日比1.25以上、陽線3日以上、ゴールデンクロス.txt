@@ -1,0 +1,72 @@
+//@version=5
+strategy("MACD")
+
+//MACDラインを作ります
+[macd_value, macd_signal, macd_hist] = ta.macd(close, 12, 26, 9)
+
+//MACDラインをプロットします
+plot(macd_value,color=color.red)
+plot(macd_signal,color=color.blue)
+plot(macd_hist,color=color.yellow)
+
+//トレードしている状態で、現在のローソク足の経過足数を書きます
+barsSinceLastEntry() =>
+    strategy.opentrades > 0 ? bar_index - strategy.opentrades.entry_bar_index(strategy.opentrades - 1) : na
+//開始日時
+test_start = timestamp(2019, 4, 1, 00, 00) //追加コード
+//終了日時
+test_end   = timestamp(2023, 4, 1, 00, 00)  //追加コード
+
+bgcolor((test_start <= time) and (time <= test_end) ? color.new(color.blue, 80) : na)
+
+//テスト期間の指定
+is_test = test_start <= time and  time <= test_end  //追加コード
+
+//出来高が前月比1.25以上か表示します
+var table table1 = table.new(position.bottom_center, 1, 1,bgcolor=color.blue)
+
+if volume >= volume[1] * 1.25
+    table.cell(table1, 0, 0, "出来高前日比 :1.25以上 ")
+else
+    table.cell(table1, 0, 0, "出来高前日比 :1.25以下 ")
+
+//陽線が三日続いているか表示します
+var table table2 = table.new(position.bottom_left, 1, 1,bgcolor=color.yellow)
+table.cell(table2, 0, 0, "陽線 : ")
+if close[2] >= close[3]
+    if close[1] >= close[2]
+        if close >= close[1]
+            table.cell(table2, 0, 0, "陽線 :3日以上連続 ")
+        else
+            table.cell(table2, 0, 0, "陽線 :連続ならず ")
+    else
+        table.cell(table2, 0, 0, "陽線 :連続ならず ")
+else
+    table.cell(table2, 0, 0, "陽線 :連続ならず ")
+
+var table table3 = table.new(position.bottom_right, 1, 1,bgcolor=color.orange)
+if close[3] < close
+    table.cell(table3, 0, 0, "終値が三日前より高い")
+else
+    table.cell(table3, 0, 0, "終値が三日前より低い")
+
+//ゴールデンクロスかつ出来高が前日比1.25以上、陽線が三日連続、3日前の日より終値が高い時に投資します。
+flag1 = ta.crossover(macd_value, macd_signal) and volume >= volume[1] * 1.25 and close >= close[1] and close[1] >= close[2] and close[2] >= close[3] and close >= close[3] //追加コード
+plotshape(flag1,text = "投資チャンス",style=shape.labeldown, color = color.yellow,textcolor = color.black)
+
+//バックテストで買います
+if (is_test)  //追加コード
+	if strategy.opentrades == 0
+    	if(flag1)
+        	strategy.entry("買い", strategy.long,100, comment="買い")
+
+if (is_test)  //追加コード
+	if strategy.opentrades == 0
+    	if(ta.crossover(macd_signal ,macd_value))
+        	strategy.entry("売り", strategy.long,100, comment="売り")
+
+//10足経過したらやめます
+if barsSinceLastEntry() >= 10
+    if(ta.crossunder(macd_value, macd_signal))
+        strategy.close("買い", comment="経過足数決済")
+        strategy.close("売り", comment="経過足数決済")
