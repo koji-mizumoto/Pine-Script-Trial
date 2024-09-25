@@ -1,7 +1,5 @@
 //@version=5
-indicator("Pivot Points High Low")
-//if(time==timenow)
-p1 = 0
+indicator("Pivot Points High Low")p1 = 0
 p2 = 0
 
 //10足周期で実行します
