@@ -1,6 +1,5 @@
 //@version=5
 indicator("Pivot Points High Low")
-//if(time==timenow)
 p1 = 0
 p2 = 0
 
