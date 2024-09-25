@@ -1,0 +1,26 @@
+//@version=5
+indicator("Pivot Points High Low")
+//if(time==timenow)
+p1 = 0
+p2 = 0
+
+//10足周期で実行します
+if(bar_index % 10 == 0)
+    p1 := 0
+//過去10日の最高値を判別します
+//ta.highest(high, 10)でもOKです
+    for i = 0 to 10 //-----(E)
+        if high[i] > high[p1]
+            p1 := i
+    mylabel2=label.new(bar_index[p1], na, "high", yloc=yloc.abovebar,color=color.red)
+            
+//10足周期で実行します
+if(bar_index % 10 == 0)
+    p2 := 0
+//過去10日の最安値を判別します
+//ta.lowest(low, 10)でもOKです
+    for i = 0 to 10 //-----(E)
+        if low[i] > low[p2]
+            p2 := i     
+    mylabel=label.new(bar_index[p2], na, "low", yloc=yloc.belowbar,color=color.blue)
+    
