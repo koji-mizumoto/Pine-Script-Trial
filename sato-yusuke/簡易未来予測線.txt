@@ -11,8 +11,6 @@ if barstate.islast
         X.push(src)
     //var table table1 = table.new(position.bottom_right, 1, 1,bgcolor=color.blue)
     //table.cell(table1, 0, 0, str.tostring(X[0]))
-    //var table table2 = table.new(position.top_center, 1, 1,bgcolor=color.blue)
-    //table.cell(table2, 0, 0, str.tostring(low[0]))
 //波を現在の位置に貼り付けます
     for i = 0 to 49
         test1 = array.get(X, i)
