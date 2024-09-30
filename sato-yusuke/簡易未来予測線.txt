@@ -13,6 +13,6 @@ if barstate.islast
     //table.cell(table1, 0, 0, str.tostring(X[0]))
 //波を現在の位置に貼り付けます
     for i = 0 to 49
-        test1 = array.get(X, i)
-        test2 = array.get(X, i+1)
-        l = line.new(bar_index + i + 1, low + test2, bar_index + i, low + array.get(X, i), width = 4)
+        test1 = array.get(X, 50 - i)
+        test2 = array.get(X, 50 - i - 1)
+        l = line.new(bar_index + i + 1, low + test2, bar_index + i, low + test1, width = 4)
