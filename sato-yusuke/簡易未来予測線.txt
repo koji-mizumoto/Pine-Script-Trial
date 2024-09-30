@@ -1,0 +1,20 @@
+//@version=5
+indicator("Future Prediction","Future Prediction", overlay = true, max_bars_back = 1000, max_lines_count = 200)
+
+//初回のみ実行します
+if barstate.islast
+//配列を作ります
+    X = array.new_float(0) 
+//50個前までの波を取得します
+    for i = 0 to 50
+        src = close[i] - close[i + 1]
+        X.push(src)
+    //var table table1 = table.new(position.bottom_right, 1, 1,bgcolor=color.blue)
+    //table.cell(table1, 0, 0, str.tostring(X[0]))
+    //var table table2 = table.new(position.top_center, 1, 1,bgcolor=color.blue)
+    //table.cell(table2, 0, 0, str.tostring(low[0]))
+//波を現在の位置に貼り付けます
+    for i = 0 to 49
+        test1 = array.get(X, i)
+        test2 = array.get(X, i+1)
+        l = line.new(bar_index + i + 1, low + test2, bar_index + i, low + array.get(X, i), width = 4)
