@@ -1,0 +1,8 @@
+//@version=5
+strategy( "違う分足のローソク足" )
+plotcandle( request.security( syminfo.tickerid ,"W" ,open ) , request.security( syminfo.tickerid ,"W" ,high ) , request.security( syminfo.tickerid ,"W" ,low ) , request.security( syminfo.tickerid ,"W" ,close ) , title='Title', color = open < close ? color.green : color.red, wickcolor=color.black)
+var table table1 = table.new(position.bottom_right, 1, 1,bgcolor=color.red)
+table.cell(table1, 0, 0, "現在の終値 : " + str.tostring(math.log(2.71828)))
+plotshape((close > close[1]),style=shape.xcross)
+if(close > close[1])
+    mylabel=label.new(bar_index, na, text="UP",color = color.red, yloc=yloc.abovebar,size = size.small)
