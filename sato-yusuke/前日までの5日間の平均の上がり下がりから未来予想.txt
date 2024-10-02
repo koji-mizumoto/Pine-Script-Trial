@@ -1,7 +1,8 @@
 //@version=5
 strategy( "前日までの5日間の上がり下がりから未来予想します" )
-x1 = array.new_float()
-for i = 0 to 5
-    x1.push(close[i] - close[i-1])
-avg=(array.get(x1,0)+array.get(x1,1)+array.get(x1,2)+array.get(x1,3)+array.get(x1,4))/5
-l = line.new(bar_index + 1, close + avg, bar_index, close, width = 4)
+if barstate.isfirst
+    x1 = array.new_float()
+    for i = 0 to 5
+        x1.push(close[i] - close[i-1])
+    avg=(array.get(x1,0)+array.get(x1,1)+array.get(x1,2)+array.get(x1,3)+array.get(x1,4))/5
+    l = line.new(bar_index + 1, close + avg, bar_index[60], close[60], width = 4)
