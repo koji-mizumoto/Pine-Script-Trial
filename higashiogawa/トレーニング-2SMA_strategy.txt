@@ -1,0 +1,17 @@
+//@version=5
+strategy("2SMA_strategy",overlay=true)
+
+price=input(title="価格",defval=close)
+shortLen=input.int(title="短期期間",defval=5,minval=1)
+longLen=input.int(title="長期期間",defval=20,minval=1)
+
+shortSMA=ta.sma(price,shortLen)
+longSMA=ta.sma(price,longLen)
+
+plot(shortSMA,color=color.red)
+plot(longSMA,color=color.blue)
+
+if ta.crossover(shortSMA,longSMA)
+    strategy.entry("Buy",strategy.long)
+if ta.crossunder(shortSMA,longSMA)
+    strategy.entry("Sell",strategy.short)
