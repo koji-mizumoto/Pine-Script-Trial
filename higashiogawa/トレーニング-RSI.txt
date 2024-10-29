@@ -1,0 +1,16 @@
+//@version=5
+indicator("RSI",overlay=false)
+
+price=input(title="価格設定",defval=close)
+rsiLen=input.int(title="RSI期間",defval=14,minval=1)
+
+rsi=ta.rsi(price,rsiLen)
+plot(rsi,color=color.blue)
+
+buySig=rsi>=70
+sellSig=rsi<=30
+
+plotshape(buySig,title="買いサイン",location=location.top,color=color.green,style=shape.labeldown,text="買います")
+plotshape(sellSig,title="売りサイン",location=location.bottom,color=color.red,style=shape.labeldown,text="売ります")
+hline(70,color=color.aqua,linestyle=hline.style_dotted)
+hline(30,color=color.aqua,linestyle=hline.style_dotted)
