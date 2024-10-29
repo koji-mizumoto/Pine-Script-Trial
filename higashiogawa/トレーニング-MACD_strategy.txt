@@ -1,0 +1,19 @@
+//@version=5
+strategy("MACD_strategy",overlay=true)
+
+price=input(title="価格",defval=close)
+fastLen=input.int(title="短期期間",defval=12)
+sloeLen=input.int(title="長期期間",defval=26)
+sigLen=input.int(title="シグナル期間",defval=9)
+
+[macd,signal,histogram]=ta.macd(price,fastLen,sloeLen,sigLen)
+plot(macd,color=color.red)
+plot(signal,color=color.blue)
+plot(histogram,color=color.orange,style=plot.style_histogram)
+
+if ta.crossover(macd,signal)
+    strategy.entry("Buy",strategy.long)
+if ta.crossunder(macd,signal)
+    strategy.entry("Sell",strategy.short)
+
+plot(strategy.netprofit,color=color.green)
