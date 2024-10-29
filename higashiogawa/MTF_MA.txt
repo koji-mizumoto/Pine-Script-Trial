@@ -1,0 +1,17 @@
+//@version=5
+indicator("MTF",overlay=true,timeframe="")
+
+method=input.string(title="SMA/EMA切替",defval="SMA",options=["SMA","EMA"])
+length=input.int(title="期間",defval=20,minval=1)
+switchD=input.bool(title="日足表示on/off",defval=true)
+switchW=input.bool(title="週足表示on/off",defval=true)
+timeD=input.timeframe(title="日足変更",defval="D")
+timeW=input.timeframe(title="週足変更",defval="W")
+
+MA=method=="SMA"?ta.sma(close,length):ta.ema(close,length)
+
+DMA=request.security(syminfo.tickerid,"D",MA)
+WMA=request.security(syminfo.tickerid,"W",MA)
+
+plot(switchD==true?DMA:na,color=color.blue)
+plot(switchW==true?WMA:na,color=color.red)
