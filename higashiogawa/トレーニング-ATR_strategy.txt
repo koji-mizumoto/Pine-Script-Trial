@@ -1,0 +1,16 @@
+//@version=5
+strategy("ATR_strategy",overlay=true)
+
+price=input(title="価格",defval=close)
+length=input.int(title="期間",defval=14)
+mult=input.float(title="トレイリングストップ係数",defval=2.0,step=0.1)
+
+atr=ta.atr(length)
+//plot(atr,color=color.red,linewidth=2)
+
+if ta.crossover(price,ta.sma(price,length))
+    strategy.entry("Buy",strategy.long)
+
+trailStop=atr*mult
+if strategy.position_size>0
+    strategy.exit("Trailing Stop",from_entry="Buy",trail_price=strategy.position_avg_price,trail_offset=trailStop)
