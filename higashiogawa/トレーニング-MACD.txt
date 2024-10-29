@@ -1,0 +1,13 @@
+//@version=5
+indicator("MACD",overlay=false)
+
+price=input(title="価格",defval=close)
+fastLen=input.int(title="ファスト期間",defval=12,minval=1)
+slowLen=input.int(title="スロウ期間",defval=26,minval=1)
+sigLen=input.int(title="シグナル期間",defval=9,minval=1)
+
+[macdLine,signalLine,histLine]=ta.macd(price,fastLen,slowLen,sigLen)
+
+plot(macdLine,color=color.red)
+plot(signalLine,color=color.blue)
+plot(histLine,color=color.orange,style=plot.style_histogram)
