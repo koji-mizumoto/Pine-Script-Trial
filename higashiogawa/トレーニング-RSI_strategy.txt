@@ -1,0 +1,19 @@
+//@version=5
+strategy("RSI_strategy",overlay=false)
+
+price=input(title="価格",defval=close)
+length=input.int(title="期間",defval=14,minval=1)
+over=input.float(title="上限",defval=70.0,step=0.1)
+under=input.float(title="下限",defval=30.0,step=0.1)
+
+RSI=ta.rsi(price,length)
+plot(RSI,color=color.orange,linewidth=2)
+hline(over,color=color.aqua,linestyle=hline.style_dashed)
+hline(under,color=color.aqua,linestyle=hline.style_dashed)
+
+if RSI<=under
+    strategy.entry("Buy",strategy.long)
+if RSI>=over
+    strategy.entry("Sell",strategy.short)
+
+strategy.exit("Settlement",from_entry="Buy",profit=5,loss=2)
