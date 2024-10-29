@@ -1,0 +1,17 @@
+//@version=5
+indicator("MTF_MACD2",overlay=true)
+
+price=input(title="価格",defval=close)
+fastLen=input.int(title="短期",defval=12)
+slowLen=input.int(title="長期",defval=26)
+sigLen=input.int(title="シグナル",defval=9)
+timeframe=input.timeframe(title="タイムフレーム選択",defval="D")
+
+[MACD,sigLine,hist]=ta.macd(price,fastLen,slowLen,sigLen)
+[MACD_MTF,sigLine_MTF,hist_MTF]=request.security(syminfo.tickerid,timeframe,ta.macd(price,fastLen,slowLen,sigLen))
+
+highbgcolor=MACD>0 and MACD_MTF>0
+lowbgcolor=MACD<0 and MACD_MTF<0
+
+bgcolor(highbgcolor?color.new(color.green,80):na)
+bgcolor(lowbgcolor?color.new(color.red,80):na)
