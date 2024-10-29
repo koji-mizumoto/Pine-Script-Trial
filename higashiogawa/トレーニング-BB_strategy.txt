@@ -1,0 +1,27 @@
+//@version=5
+strategy("BB_strategy",overlay=true)
+
+price=input(title="価格",defval=close)
+length=input.int(title="期間",defval=20,minval=1)
+SD=input.float(title="標準偏差",defval=2.0,minval=0.1,maxval=3.0,step=0.1)
+width=input.float(title="バンド幅",defval=0.020,minval=0.001,step=0.001)
+
+//[base,max,min]=ta.bb(price,length,SD)
+
+base=ta.sma(price,length)
+dev=SD*ta.stdev(price,length)
+max=base+dev
+min=base-dev
+
+plot(base,color=color.blue,linewidth=2)
+maxLine=plot(max,color=color.aqua)
+minLine=plot(min,color=color.aqua)
+fill(maxLine,minLine,color.new(color.aqua,90))
+
+bandWidth=max-min
+minBandWidth=width
+if(bandWidth>minBandWidth)
+    if(close<=min)
+        strategy.entry("Buy",strategy.long)
+    if(close>=max)
+        strategy.entry("Sell",strategy.short)
