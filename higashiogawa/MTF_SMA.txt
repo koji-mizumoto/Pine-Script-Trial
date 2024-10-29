@@ -1,0 +1,15 @@
+//@version=5
+indicator("MTF_SMA",overlay=true)
+
+price=input(title="価格",defval=close)
+length=input.int(title="期間",defval=20)
+method=input.string(title="SMA/EMA切替",defval="SMA",options=["SMA","EMA"])
+timeframeLong=input.timeframe(title="タイムフレーム変更",defval="D")
+
+MA=method=="SMA"?ta.sma(price,length):ta.ema(price,length)
+MA_MTF=request.security(syminfo.tickerid,timeframeLong,MA)
+
+plot(price,color=color.blue,linewidth=2)
+plot(MA_MTF,color=color.red,linewidth=2)
+
+bgcolor(MA_MTF<price?color.new(color.green,80):color.new(color.red,80))
