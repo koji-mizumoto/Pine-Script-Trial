@@ -1,0 +1,47 @@
+//@version=5
+strategy("トレーニング_strategy",overlay=true)
+
+method=input.string(title="移動平均線選択",defval="SMA",options=["SMA","EMA"])
+price=input(title="価格",defval=close)
+shortLen=input.int(title="短期MA期間",defval=20)
+longLen=input.int(title="長期MA期間",defval=50)
+rsiLen=input.int(title="RSI期間",defval=14)
+rsiLowLine=input.int(title="RSI下限ライン",defval=30)
+rsiUpLine=input.int(title="RSIエントリーライン",defval=40)
+bbLen=input.int(title="BB期間",defval=20)
+bbMult=input.float(title="標準偏差",defval=2.0,step=0.1)
+volumeLen=input.int(title="出来高期間",defval=20)
+switch20MA=input.bool(title="短期MA on/off",defval=true)
+switch50MA=input.bool(title="長期MA on/off",defval=true)
+switchRSI=input.bool(title="RSI on/off",defval=false)
+switchBB=input.bool(title="BB on/off",defval=true)
+switchVOLUME=input.bool(title="出来高 on/off",defval=true)
+
+shortMA=method=="SMA"?ta.sma(price,shortLen):ta.ema(price,shortLen)
+longMA=method=="SMA"?ta.sma(price,longLen):ta.ema(price,longLen)
+RSI=ta.rsi(price,rsiLen)
+[baseLine,upLine,lowLine]=ta.bb(price,bbLen,bbMult)
+
+plot(switch20MA==true?shortMA:na,color=color.red)
+plot(switch50MA==true?longMA:na,color=color.blue)
+plot(switchRSI==true?RSI:na,color=color.yellow)
+plot(switchBB==true?baseLine:na,color=color.lime)
+upLinePlot=plot(switchBB==true?upLine:na,color=color.green)
+lowLinePlot=plot(switchBB==true?lowLine:na,color=color.green)
+fill(upLinePlot,lowLinePlot,color.new(color.green,90))
+
+bool1=false
+bool2=false
+bool3=false
+bool4=false
+
+bool1:=shortMA>longMA
+bool2:=RSI<rsiLowLine and ta.crossover(RSI,rsiUpLine)
+bool3:=lowLine>=price
+bool4:=volume>ta.sma(volume,volumeLen)
+
+if bool1 and bool2 and bool3 and bool4
+    strategy.entry("Buy",strategy.long)
+
+if shortMA<longMA
+    strategy.close("Buy")
