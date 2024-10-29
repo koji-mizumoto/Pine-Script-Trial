@@ -1,0 +1,40 @@
+//@version=5
+indicator(title="3MA",overlay=true)
+
+MAMethod=input.string(title="MA種類",defval="EMA",options=["EMA","SMA"])
+ma_length1=input.int(title="短期期間",defval=20)
+ma_length2=input.int(title="中期期間",defval=75)
+ma_length3=input.int(title="長期期間",defval=200)
+ma1=MAMethod=="EMA"?ta.ema(close,ma_length1):ta.sma(close,ma_length1)
+ma2=MAMethod=="EMA"?ta.ema(close,ma_length2):ta.sma(close,ma_length2)
+ma3=MAMethod=="EMA"?ta.ema(close,ma_length3):ta.sma(close,ma_length3)
+plot(ma1,color=color.red)
+plot(ma2,color=color.blue)
+plot(ma3,color=color.green)
+
+PO=close>ma1 and ma1>ma2 and ma2>ma3
+bgcolor(PO?color.new(color.blue,80):na)
+disPO=close<ma1 and ma1<ma2 and ma2<ma3
+bgcolor(disPO?color.new(color.red,80):na)
+
+place1=ma1>ma2
+place2=ma1>ma3
+place3=ta.crossover(ma2,ma3)
+placeGC=place1 and place2 and place3
+plotshape(placeGC,title="ゴールデンクロス",location=location.belowbar,style=shape.triangleup,size=size.small,color=color.blue)
+place4=ma1<ma2
+place5=ma1<ma3
+place6=ta.crossunder(ma2,ma3)
+placeDC=place4 and place5 and place6
+plotshape(placeDC,title="デッドクロス",location=location.abovebar,style=shape.triangledown,size=size.small,color=color.red)
+
+ma_label(x, y, labeltext="", textcolor=color.blue)=>
+    var l=label.new(na, na, labeltext,textcolor=textcolor, style=label.style_none)
+    l.set_xy(x,y)
+    l
+mylabel1=ma_label(bar_index+2, ma1, "短期", color.red)
+mylabel2=ma_label(bar_index+2, ma2, "中期", color.blue)
+mylabel3=ma_label(bar_index+2, ma3, "長期", color.green)
+
+alertcondition(placeGC,title="GC",message="ゴールデンクロス発生")
+alertcondition(placeDC,title="DC",message="デッドクロス発生")
