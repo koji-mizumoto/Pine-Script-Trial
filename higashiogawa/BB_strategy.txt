@@ -1,0 +1,51 @@
+//@version=5
+strategy("BB_strategy",overlay=true)
+
+price=input(title="価格",defval=close)
+MAMethod=input.string(title="移動平均線",defval="SMA",options=["SMA","EMA"])
+length=input.int(title="BB期間",defval=20,minval=1)
+sigma1=input.float(title="標準偏差内",defval=1,minval=1,maxval=3)
+sigma2=input.float(title="標準偏差外",defval=2,minval=1,maxval=3)
+
+MA=MAMethod=="SMA"?ta.sma(price,length):ta.ema(price,length)
+[MA1,bbUp1,bbLow1]=ta.bb(price,length,sigma1)
+[MA2,bbUp2,bbLow2]=ta.bb(price,length,sigma2)
+
+plot(MA,color=color.white,linewidth=2)
+lineUp1=plot(bbUp1,color=color.lime)
+lineUp2=plot(bbUp2,color=color.green)
+lineLow1=plot(bbLow1,color=color.lime)
+lineLow2=plot(bbLow2,color=color.green)
+
+fill(lineUp1,lineLow1,color.new(color.green,80))
+fill(lineUp2,lineLow2,color.new(color.green,90))
+
+bool1=false
+bool2=false
+bool3=false
+bool4=false
+var bool5=true
+
+if strategy.position_size[1]==1 and strategy.position_size[0]==0
+    bool1:=false
+    bool2:=false
+    bool3:=false
+    bool4:=false
+
+bool1:=(close[2]-open[2])>0 and (close[1]-open[1])>0 and (close[0]-open[0])>0
+bool2:=(open[2]-close[2])>0 and (open[1]-close[1])>0 and (open[0]-close[0])>0
+bool3:=close>=bbUp2
+bool4:=close<=bbLow2
+
+if bool1 and bool3
+    strategy.entry("Long",strategy.long)
+if bool2 and bool4
+    strategy.entry("Short",strategy.short)
+
+if close<=bbUp2
+    strategy.close("Long")
+if close>=bbLow2
+    strategy.close("Short")
+
+if bool1[0]==true and bool1[1]==false
+    bool5:=false
