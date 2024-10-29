@@ -1,0 +1,13 @@
+//@version=5
+indicator("2MA",overlay=true)
+
+price=input(defval=close)
+MAMethod=input.string(title="移動平均線の種類",defval="SMA",options=["SMA","EMA"])
+MA50len=input.int(title="短期期間",defval=50,minval=1)
+MA200len=input.int(title="長期期間",defval=200,minval=1)
+
+MA50=MAMethod=="SMA"?ta.sma(price,MA50len):ta.ema(price,MA50len)
+MA200=MAMethod=="SMA"?ta.sma(price,MA200len):ta.ema(price,MA200len)
+
+plot(MA50,color=color.red,linewidth=2)
+plot(MA200,color=color.blue,linewidth=2)
