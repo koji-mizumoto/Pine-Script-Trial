@@ -1,0 +1,15 @@
+//@version=5
+indicator("MTF_RSI",overlay=true)
+
+price=input(title="価格",defval=close)
+length=input.int(title="期間",defval=14)
+timeframe=input.timeframe(title="タイムフレーム選択",defval="240")
+highLine=input.int(title="RSI上限",defval=70)
+lowLine=input.int(title="RSI下限",defval=30)
+
+RSI=request.security(syminfo.tickerid,timeframe,ta.rsi(price,length))
+
+//plot(RSI,color=color.blue,linewidth=2)
+
+bgcolor(RSI>=highLine?color.new(color.green,80):na)
+bgcolor(RSI<=lowLine?color.new(color.red,80):na)
