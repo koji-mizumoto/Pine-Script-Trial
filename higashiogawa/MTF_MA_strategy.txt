@@ -1,0 +1,16 @@
+//@version=5
+strategy("MTF_MA_strategy",shorttitle="MTF_MA",overlay=true)
+
+method=input.string(title="SMA/EMA",defval="SMA",options=["SMA","EMA"])
+price=input(title="価格",defval=close)
+length=input.int(title="期間",defval=50,minval=1)
+timeframe=input.timeframe(title="タイムフレーム",defval="60")
+
+MTF_price=request.security(syminfo.tickerid,timeframe,price)
+MA=method=="SMA"?ta.sma(MTF_price,length):ta.ema(MTF_price,length)
+plot(MA,color=color.blue,linewidth=2)
+
+if(price>MA)
+    strategy.entry("Buy",strategy.long)
+if(price<MA)
+    strategy.entry("Sell",strategy.short)
