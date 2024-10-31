@@ -1,0 +1,29 @@
+//@version=5
+strategy("トレーニング_strategy3",overlay=false)
+
+bbLen=input.int(title="BB期間",defval=20)
+bbMult=input.float(title="BB偏差",defval=2.0,step=0.1)
+fastLen=input.int(title="MACD短期期間",defval=12)
+slowLen=input.int(title="MACD長期期間",defval=26)
+sigLen=input.int(title="MACDシグナル期間",defval=9)
+
+[base,upLine,lowLine]=ta.bb(close,bbLen,bbMult)
+[macd,sigLine,histLine]=ta.macd(close,fastLen,slowLen,sigLen)
+
+plot(base,color=color.lime,force_overlay=true)
+upLineFill=plot(upLine,color=color.green,force_overlay=true)
+lowLineFill=plot(lowLine,color=color.green,force_overlay=true)
+fill(upLineFill,lowLineFill,color.new(color.green,90))
+
+plot(macd,color=color.orange)
+plot(sigLine,color=color.yellow)
+color1=color.blue
+color2=color.red
+plotcolor=histLine>0?color1:color2
+plot(histLine,color=plotcolor,style=plot.style_histogram)
+
+bool1=close>=upLine
+bool2=ta.crossunder(macd,sigLine)
+
+if bool1 and bool2
+    strategy.entry("Sell",strategy.short)
