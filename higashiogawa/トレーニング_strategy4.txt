@@ -1,0 +1,25 @@
+//@version=5
+strategy("トレーニング_strategy4",overlay=true)
+
+shortLen=input.int(title="短期期間",defval=10)
+midLen=input.int(title="中期期間",defval=30)
+longLen=input.int(title="長期期間",defval=50)
+meth=input.string(title="SMA/EMA選択",defval="SMA",options=["SMA","EMA"])
+
+shortMA=meth=="SMA"?ta.sma(close,shortLen):ta.ema(close,shortLen)
+shortMA_p=meth=="SMA"?ta.sma(close[1],shortLen):ta.ema(close[1],shortLen)
+midMA=meth=="SMA"?ta.sma(close,midLen):ta.ema(close,midLen)
+midMA_p=meth=="SMA"?ta.sma(close[1],midLen):ta.ema(close[1],midLen)
+longMA=meth=="SMA"?ta.sma(close,longLen):ta.ema(close,longLen)
+longMA_p=meth=="SMA"?ta.sma(close[1],longLen):ta.ema(close[1],longLen)
+
+plot(shortMA,color=color.aqua)
+plot(midMA,color=color.fuchsia)
+plot(longMA,color=color.maroon)
+
+bool1=shortMA>shortMA_p and midMA>midMA_p and longMA>longMA_p
+bool2=shortMA>midMA
+bool3=ta.crossover(midMA,longMA)
+
+if bool1 and bool2 and bool3
+    strategy.entry("Buy",strategy.long)
