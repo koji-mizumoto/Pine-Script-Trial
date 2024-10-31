@@ -1,0 +1,22 @@
+//@version=5
+strategy("トレーニング_strategy2",overlay=false)
+
+SMALen=input.int(title="SMA期間",defval=50)
+RSILen=input.int(title="RSI期間",defval=14)
+RSILine=input.int(title="RSI基準ライン",defval=30)
+switchSMA=input.bool(title="SMA on/off",defval=true)
+switchRSI=input.bool(title="RSI on/off",defval=true)
+switchLine=input.bool(title="基準ライン on/off",defval=true)
+
+SMA=ta.sma(close,SMALen)
+RSI=ta.rsi(close,RSILen)
+
+plot(switchSMA==true?SMA:na,color=color.red,force_overlay=true)
+plot(switchRSI==true?RSI:na,color=color.blue,force_overlay=false)
+hline(switchLine==true?RSILine:na,color=color.green,linestyle=hline.style_dotted)
+
+bool1=RSI<RSILine
+bool2=ta.crossover(SMA,close)
+
+if bool1 and bool2
+    strategy.entry("Buy",strategy.long)
