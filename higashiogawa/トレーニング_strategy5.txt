@@ -1,0 +1,27 @@
+//@version=5
+strategy("トレーニング_strategy5",overlay=true)
+
+shortLen=input.int(title="短期期間",defval=5)
+longLen=input.int(title="長期期間",defval=20)
+entryHour=input.int(title="開始時間(H)",defval=9,minval=0,maxval=23)
+entryMinute=input.int(title="開始時間(M)",defval=30,minval=0,maxval=60)
+closeHour=input.int(title="終了時間(H)",defval=15,minval=0,maxval=23)
+closeMinute=input.int(title="終了時間(M)",defval=0,minval=0,maxval=60)
+
+startTime=timestamp("UTC+9",year,month,dayofmonth,entryHour,entryMinute)
+endTime=timestamp("UTC+9",year,month,dayofmonth,closeHour,closeMinute)
+withinTime=(time>=startTime and time<=endTime)
+
+shortSMA=ta.sma(close,shortLen)
+longSMA=ta.sma(close,longLen)
+
+plot(shortSMA,color=color.red)
+plot(longSMA,color=color.blue)
+
+GC=ta.crossover(shortSMA,longSMA)
+DC=ta.crossunder(shortSMA,longSMA)
+
+if GC and withinTime
+    strategy.entry("Buy",strategy.long)
+if DC and withinTime
+    strategy.entry("Sell",strategy.short)
