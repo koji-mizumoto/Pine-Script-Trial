@@ -1,0 +1,38 @@
+//@version=5
+strategy("トレーニング_strategy6",overlay=true)
+
+price=input(title="価格",defval=close)
+bbLen=input.int(title="BB期間",defval=20)
+bbMult=input.float(title="BB偏差",defval=2.0,step=0.1)
+smaLen=input.int(title="SMA期間",defval=50)
+
+[baseLine,upBand,lowBand]=ta.bb(price,bbLen,bbMult)
+SMA=ta.sma(price,smaLen)
+
+plot(baseLine,color=color.olive)
+plot_upBand=plot(upBand,color=color.green)
+plot_lowBand=plot(lowBand,color=color.green)
+fill(plot_upBand,plot_lowBand,color.new(color.lime,90))
+plot(SMA,color=color.orange)
+
+bool1=false
+bool2=false
+var bool3=true
+
+if strategy.position_size[1]==1 and strategy.position_size[0]==0
+    bool1:=false
+    bool2:=false
+    bool3:=true
+
+bool1:=close<=lowBand
+bool2:=close>=upBand
+
+if bool1 and bool3 and close>SMA
+    strategy.entry("Buy",strategy.long)
+if bool2 and bool3 and close<SMA
+    strategy.entry("Sell",strategy.short)
+
+//if bool1[0]==true and bool1[1]==false
+//    bool3:=false
+//if bool2[0]==true and bool2[1]==false
+//    bool3:=false
