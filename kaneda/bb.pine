@@ -1,0 +1,41 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kaneda_cocoroto_co
+
+//@version=5
+
+// ボリンジャーバンド(ta.bbを使わない)
+// 参考サイト：Pineスクリプト（Pine Script）でボリンジャーバンドを作成する方法
+// URL:https://www.oanda.jp/lab-education/tradingviewstrategy/pine/pine_script_bollinger_bands_create/
+indicator(shorttitle = 'BB', title = 'ボリンジャーバンド', overlay = true)
+// 入力
+price = input(close)
+length = input.int(25, minval=1)
+deviation = input.float(2.0, title = '偏差', minval=0.001, maxval=50)
+
+// 移動平均線と偏差の計算
+base = ta.sma(price, length)
+dev1 = ta.stdev(price, length)
+dev2 = deviation*dev1
+
+// 各ボリンジャーバンドの計算
+upper1 = base + dev1
+lower1 = base - dev1
+upper2 = base + dev2
+lower2 = base - dev2
+
+// 中心のMAとロウソク足跡値の位置関係でMAの色が変化する機能
+colorBase = price >= base ? color.aqua : color.orange
+
+plt_Base = plot(base, linewidth = 2, color=colorBase)
+pltUpper1 = plot(upper1, color = color.new(color.aqua, 80), style = plot.style_circles)
+pltUpper2 = plot(upper2, color = color.new(color.aqua, 80))
+pltLower1 = plot(lower1, color = color.new(color.orange, 0), style = plot.style_circles)
+pltLower2 = plot(lower2, color = color.new(color.orange, 0))
+
+fill(plt_Base, pltUpper2, color = color.new(color.aqua, 80))
+fill(pltUpper1, pltUpper2, color = color.new(color.aqua, 80))
+fill(plt_Base, pltLower2, color = color.new(color.orange, 80))
+fill(plt_Base, pltLower2, color = color.new(color.orange, 80))
+
+
+plot(close)
