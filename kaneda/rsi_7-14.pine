@@ -1,0 +1,15 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kaneda_cocoroto_co
+
+//@version=5
+// RSI
+// RSIの値は0～100の範囲なので、ロウソク表示を基準にすると、RSIのグラフの表示が下の表に表示されて使えない
+// ロウソクの値が最低値1000以上でグラフが破綻する
+// スクリプトではRSIを別ペインで表示するようにしている。
+// 別ペインで表示されない時は、インジゲーターメニューで移動->下のペインを選択する
+// 参考サイト：Pine Script™ (v5) の覚書 - 9: RSI（ta.rsi）を描く
+// URL:https://note.com/rca_co_jp/n/ndff03eb25d4c
+indicator(shorttitle = 'RSI', title = '相対力指数' , overlay = false)
+
+plot(ta.rsi(close, 7), 'RSI7', color.yellow, 1)
+plot(ta.rsi(close, 14), 'RSI14', color.orange, 1)
