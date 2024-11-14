@@ -1,0 +1,34 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kaneda_cocoroto_co
+
+// 参考サイト：Pineスクリプト初級講座１
+// URL:https://pine.sr2.jp/8/
+// 備考：載っているスクリプトはversion4のものなので、version5のコードに直す
+
+//@version=5
+indicator("ゴールデンクロス", overlay = true)
+
+// 入力値、SMA or EMAの選択
+fast_val = input.int(defval = 25, title = "短期MA", minval = 1)  // 短期
+slow_val = input.int(defval = 75, title = "長期MA", minval = 1)   // 長期
+ma_type = input.string(title = "MA Type", defval = "SMA", options = ["SMA", "EMA"])
+
+// 移動平均線の計算
+fast_ma = ma_type == "SMA" ? ta.sma(close, fast_val) : ta.ema(close, fast_val)
+slow_ma = ma_type == "SMA" ? ta.sma(close, slow_val) : ta.ema(close, slow_val)
+
+// 移動平均線のプロット（描画）
+plot(fast_ma, color = color.orange, title = "短期MA")
+plot(slow_ma, color = color.aqua, title = "長期MA")
+
+// ゴールデンクロスのシグナル
+crossUp = ta.crossover(fast_ma, slow_ma)
+crossDown = ta.crossunder(fast_ma, slow_ma)
+
+// シグナルをプロット
+plotshape(crossUp, style = shape.triangleup, location = location.belowbar,
+     color = color.green, size = size.small, title = "Golden Cross",
+     text = "GC", textcolor = color.white)
+plotshape(crossDown, style = shape.triangledown, location = location.abovebar,
+     color = color.red, size = size.small, title = "Dead Cross",
+     text = "DC", textcolor = color.white)
