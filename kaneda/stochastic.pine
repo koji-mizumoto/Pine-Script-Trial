@@ -1,0 +1,26 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kaneda_cocoroto_co
+
+// 参考サイト：ストキャスティクスって使えるの？pineで検証！
+// URL:https://fp-shima.ne.jp/2022/09/29/pine11/
+
+//@version=5
+indicator("ストキャスティクス")
+
+// 入力
+stok_range = input.int(defval = 9, title = "期間")
+
+// 計算
+// ストキャスティクス：ファストストキャスティクス %K
+stok = ta.stoch(close, high, low, stok_range)
+
+// ストキャスティクス：ファストストキャスティクスの%Dかつ、スローストキャスティクス %K
+stod = ta.sma(stok, 3)
+
+// スローストキャスティクスの%D
+slowstod = ta.sma(stod, 3)
+
+// プロット
+plot(stok)
+plot(stod, color = color.white)
+plot(slowstod, color = color.lime)
