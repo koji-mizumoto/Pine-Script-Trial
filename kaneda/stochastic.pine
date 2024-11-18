@@ -20,7 +20,19 @@ stod = ta.sma(stok, 3)
 // スローストキャスティクスの%D
 slowstod = ta.sma(stod, 3)
 
+// シグナル
+crossUp = ta.crossover(slowstod, 20)
+crossDown = ta.crossunder(slowstod, 80)
+
 // プロット
 plot(stok)
 plot(stod, color = color.white)
 plot(slowstod, color = color.lime)
+
+// プロット（シグナル）
+plotshape(crossUp, style = shape.triangleup, location = location.bottom,
+     color = color.green, size = size.small, title = "ロング エントリーアラート発生",
+     text = "GC", textcolor = color.white)
+plotshape(crossDown, style = shape.triangleup, location = location.bottom,
+     color = color.red, size = size.small, title = "ロング エグジットアラート発生",
+     text = "DC", textcolor = color.white)
