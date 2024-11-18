@@ -1,0 +1,31 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kaneda_cocoroto_co
+
+//@version=5
+strategy("ストキャスティクス戦略", overlay=false, margin_long=100, margin_short=100)
+
+// 入力
+stok_range = input.int(defval = 9, title = "期間")
+
+// 計算
+// ストキャスティクス：ファストストキャスティクス %K
+stok = ta.stoch(close, high, low, stok_range)
+
+// ストキャスティクス：ファストストキャスティクスの%Dかつ、スローストキャスティクス %K
+stod = ta.sma(stok, 3)
+
+// スローストキャスティクスの%D
+slowstod = ta.sma(stod, 3)
+
+// プロット
+plot(stok)
+plot(stod, color = color.white)
+plot(slowstod, color = color.lime)
+
+longCondition = ta.crossover(slowstod, 20)
+if (longCondition)
+    strategy.entry("My Long Entry Id", strategy.long)
+
+shortCondition = ta.crossunder(slowstod, 80)
+if (shortCondition)
+    strategy.entry("My Short Entry Id", strategy.short)
