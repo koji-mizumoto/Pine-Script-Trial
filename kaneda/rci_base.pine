@@ -1,0 +1,33 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+
+// このスクリプトは、元になったスクリプトがあります。下記を参照。
+// Original Script by
+// © rumpypumpydumpy
+// https://jp.tradingview.com/script/owlV88rj-Rank-Correlation-Index/
+
+//@version=5
+// study("Rank Correlation Index", overlay=false, resolution="")
+indicator("Rank Correlation Index", overlay = false)
+src = input(close, title="close")
+len = input(13, title="期間")
+
+f_rci(_src, _len)=>
+    _sum = 0.0
+    for _i = 0 to _len -1
+        _p = _src[_i]
+        _o = 1
+        _s = 0
+        for _j = 0 to _len - 1
+            if _p < _src[_j]
+                _o := _o + 1
+            else if _p == _src[_j]
+                _s := _s + 1
+        _ord = _o + (_s -1) / 2
+        _sum := _sum + math.pow(_i + 1 - _ord, 2)
+    (1 - 6 * _sum / (_len * (math.pow(_len,2) - 1))) * 100
+
+RCI = f_rci(src, len)
+
+plot(RCI, title="RCI")
+
+hline(0), hline(-100), hline(100)
