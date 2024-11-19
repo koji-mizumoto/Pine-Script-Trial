@@ -18,6 +18,7 @@ long_len = input(52, title="RCI長期")
 overBought_zone = input.int(defval = 80, title = "買われすぎゾーン")
 overSold_zone = input.int(defval = -80, title = "売られすぎゾーン")
 
+// function
 f_rci(_src, _len)=>
     _sum = 0.0
     for _i = 0 to _len -1
@@ -45,8 +46,8 @@ plot(long_RCI, title="RCI長期", color = color.white, linewidth = 2)
 hline(0)
 maxLine = hline(100)
 minLine = hline(-100),
-overBoughtLine = hline(overBought_zone, title = "overBought", color = color.red, linestyle = hline.style_solid)
-overSoldLine = hline(overSold_zone, title = "overSold", color = color.blue, linestyle = hline.style_solid)
+overBoughtLine = hline(overBought_zone, title = "overBought", color = color.red, linestyle = hline.style_dotted)
+overSoldLine = hline(overSold_zone, title = "overSold", color = color.blue, linestyle = hline.style_dotted)
 
 fill(overBoughtLine, maxLine, color = color.new(#FF9100, 70))
 fill(overSoldLine, minLine, color = color.new(#0000FF, 70))
