@@ -9,12 +9,29 @@
 // 別ペインで表示されない時は、インジゲーターメニューで移動->下のペインを選択する
 // 参考サイト：Pine Script™ (v5) の覚書 - 9: RSI（ta.rsi）を描く
 // URL:https://note.com/rca_co_jp/n/ndff03eb25d4c
+
+// 2024/11/20
+// パラメータの設定を追加、売られすぎ・買われすぎゾーンの設定を追加
+
+// ===============================
 indicator(shorttitle = 'RSI', title = '相対力指数' , overlay = false)
 
 // input
 short_RSI = input.int(defval = 7, title = "短期RSI")
 long_RSI = input.int(defval = 14, title = "長期RSI")
+overBought_zone = input.int(defval = 80, title = "買われすぎゾーン")
+overSold_zone = input.int(defval = -80, title = "売られすぎゾーン")
 
 // plot
 plot(ta.rsi(close, short_RSI), '短期RSI', color.yellow, 1)
 plot(ta.rsi(close, long_RSI), '長期RSI', color.orange, 1)
+
+// fill （買われすぎ・売られすぎ）
+hline(0)
+maxLine = hline(100)
+minLine = hline(-100)
+overBoughtLine = hline(overBought_zone, title = "overBought", color = color.red, linestyle = hline.style_dotted)
+overSoldLine = hline(overSold_zone, title = "overSold", color = color.blue, linestyle = hline.style_dotted)
+
+fill(overBoughtLine, maxLine, color = color.new(#FF9100, 70))
+fill(overSoldLine, minLine, color = color.new(#0000FF, 70))
