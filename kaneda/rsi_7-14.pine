@@ -11,5 +11,10 @@
 // URL:https://note.com/rca_co_jp/n/ndff03eb25d4c
 indicator(shorttitle = 'RSI', title = '相対力指数' , overlay = false)
 
-plot(ta.rsi(close, 7), 'RSI7', color.yellow, 1)
-plot(ta.rsi(close, 14), 'RSI14', color.orange, 1)
+// input
+short_RSI = input.int(defval = 7, title = "短期RSI")
+long_RSI = input.int(defval = 14, title = "長期RSI")
+
+// plot
+plot(ta.rsi(close, short_RSI), '短期RSI', color.yellow, 1)
+plot(ta.rsi(close, long_RSI), '長期RSI', color.orange, 1)
