@@ -1,0 +1,42 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kaneda_cocoroto_co
+
+// 参考サイト：Pineスクリプト（Pine Script）でMACDを作成する方法
+// URL:https://www.oanda.jp/lab-education/tradingviewstrategy/pine/pine_script_macd/
+
+//@version=6
+indicator("MACD MultiTimeFlame", overlay = false)
+
+// input MACD Multi
+SignalLength    = input.int(title = "Signal期間", defval = 9, minval = 1)
+fastMA          = input.int(title = "Fast MA 期間", defval = 12, minval = 1)
+slowMA          = input.int(title = "Slow MA 期間", defval = 26, minval = 1)
+
+// MACD calc
+src = close
+[_CurMACD, _Signal, _CurHistogram]   = ta.macd(src[0], fastMA, slowMA, SignalLength)
+[_, _, _PreHistogram]                = ta.macd(src[1], fastMA, slowMA, SignalLength)
+
+// MultiTimeFlame Setting
+IptSpeed = input.timeframe("D", title = "マルチタイムフレーム")
+
+CurMACD         = request.security(syminfo.tickerid, IptSpeed, _CurMACD)
+Signal          = request.security(syminfo.tickerid, IptSpeed, _Signal)
+CurHistogram    = request.security(syminfo.tickerid, IptSpeed, _CurHistogram)
+PreHistogram    = request.security(syminfo.tickerid, IptSpeed, _PreHistogram)
+
+// Histogram
+his_colorUp1    = color.new(color.lime, transp = 50)
+his_colorUp2    = color.new(color.green, transp = 50)
+his_colorDown1  = color.new(color.maroon, transp = 50)
+his_colorDown2  = color.new(color.red, transp = 50)
+
+// 条件によるヒストグラムの塗分け
+plotColor = CurHistogram > 0 ? CurHistogram > PreHistogram ? his_colorUp1 : his_colorUp2
+                             : CurHistogram < PreHistogram ? his_colorDown1 :his_colorDown2
+
+// plot
+plot(CurMACD,       title = "MACD",      color = color.blue, linewidth = 2)
+plot(Signal,        title = "シグナル",  color = color.red, linewidth = 2)
+plot(CurHistogram,  title = "ヒストグラム",     style = plot.style_histogram, color = plotColor, linewidth = 3)
+plot(0, title = "0 Line", color = color.gray, linewidth = 1)
