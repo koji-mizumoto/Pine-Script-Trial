@@ -13,7 +13,7 @@ rsi_up_threshold = input.int(defval = 80, title = "RSIの上のしきい値", mi
 macd_fast_length = input.int(defval = 12, title = "MACD短期期間", minval = 1)
 macd_slow_length = input.int(defval = 26, title = "MACD長期期間", minval = 1)
 macd_signal_length = input.int(defval = 9, title = "MACDのシグナル", minval = 1)
-lookback_period = input.int(defval = 10, title = "RSIを坂のぼる期間", minval = 1)  // 過去x期間を確認
+lookback_period = input.int(defval = 10, title = "RSIを遡る期間", minval = 1)  // 過去x期間を確認
 
 // RSIの計算
 rsi = ta.rsi(close, rsi_length)
