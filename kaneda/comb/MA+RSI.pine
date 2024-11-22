@@ -1,0 +1,42 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kaneda_cocoroto_co
+
+// 移動平均線が上昇トレンドを示している間に、RSIが30以下に達した場合、押し目買いのチャンスとみなす。
+// 移動平均線短期が、長期とデッドクロスした時に売り
+
+//@version=6
+indicator("[1]MA + [2]RSI", overlay = true)
+
+// input
+MA_range = input.int(defval = 100, title = "平均移動線・長期")
+MA_range_short = input.int(defval = 45, title = "平均移動線・短期")
+rsi_length = input.int(defval = 14, title = "長期RSI期間", minval = 1)
+rsi_threshold = input.int(defval = 30, title = "RSIの下のしきい値（買）", minval = 1)
+rsi_up_threshold = input.int(defval = 50, title = "RSIの上のしきい値（売）", minval = 1)
+roclength = input.int(defval = 3, title = "過去x期間", minval = 1)
+roc_threshold = input.float(defval = 0.5, title = "傾きしきい値", minval = 0.1, maxval = 0.9)
+
+
+// 上昇トレンド
+MA_trand = ta.sma(close, MA_range)
+MA_short = ta.sma(close, MA_range_short)
+MA_roc = ta.roc(MA_trand, roclength)
+
+
+// RSI calc
+rsi = ta.rsi(close, rsi_length)
+
+// signal
+buy_point = MA_trand < close and rsi < rsi_threshold
+MA_dead_cross = ta.crossunder(MA_short, MA_trand)
+sell_point = MA_dead_cross
+
+// plot
+plot(MA_trand, title = "x期間：移動平均線" , color = color.blue)
+plot(MA_short, title = "変数:MA_low -> MA_trand 期間内最低値", color = color.yellow)
+bgcolor(MA_trand < close ? color.new(color.red, 70) : color.new(color.red, 100))
+plotshape(buy_point, title = "MA上昇+RSI30以下",
+     style = shape.arrowup, location = location.belowbar,
+     text = "BUY", textcolor = color.red, size = size.small)
+plotshape(sell_point, title = "MA下降",
+     style = shape.arrowdown, location = location.abovebar, text = "SELL", textcolor = color.green, size = size.small)
