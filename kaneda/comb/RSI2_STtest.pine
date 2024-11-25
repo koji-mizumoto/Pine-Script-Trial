@@ -22,7 +22,7 @@ isBetween = time_from <= time and time < time_To
 rsi = ta.rsi(close, rsi_length)
 
 // signal
-// RSIが下からセンターライン下を交差したとき買い
+// RSIが下からセンターライン上を交差したとき買い
 // 逆に、RSIが上からセンターライン下を交差したとき売り
 rsi_center_crossover = ta.crossover(rsi, rsi_center_over)
 rsi_center_crossunder = ta.crossunder(rsi, rsi_center_under)
