@@ -1,0 +1,58 @@
+//@version=6
+strategy("トレーニング_strategy7",overlay=false)
+
+price=input(title="価格",defval=close)
+rsiLen=input.int(title="RSI期間",defval=14)
+higtLine=input.int(title="RSI上ライン",defval=70)
+lowLine=input.int(title="RSI下ライン",defval=30)
+fastLen=input.int(title="MACDファスト期間",defval=12)
+slowLen=input.int(title="MACDスロウ期間",defval=24)
+signalLen=input.int(title="MACDシグナル期間",defval=9)
+dmiLen=input.int(title="DMI期間",defval=14)
+adxLen=input.int(title="ADX期間",defval=14)
+adxLine=input.int(title="ADXライン",defval=50)
+
+RSI=ta.rsi(price,rsiLen)
+[macdLine,signalLine,histLine]=ta.macd(price,fastLen,slowLen,signalLen)
+[diplus,diminus,adx]=ta.dmi(dmiLen,adxLen)
+
+plot(RSI,color=color.orange)
+plot(macdLine,color=color.blue,force_overlay=false)
+plot(signalLine,color=color.aqua,force_overlay=false)
+plot(adx,color=color.fuchsia)
+
+hline(higtLine,color=color.gray,linestyle=hline.style_dotted)
+hline(lowLine,color=color.gray,linestyle=hline.style_dotted)
+hline(adxLine,color=color.white,linestyle=hline.style_dotted)
+
+bgcolor(adx>adxLine?color.new(color.blue,90):na)
+bgcolor(RSI<30?color.new(color.yellow,90):na)
+bgcolor(RSI>70?color.new(color.red,90):na)
+
+plotshape(ta.crossover(macdLine,signalLine),style=shape.triangledown,location=location.top,color=color.green,size=size.tiny)
+plotshape(ta.crossunder(macdLine,signalLine),style=shape.triangleup,location=location.bottom,color=color.olive,size=size.tiny)
+
+bool1=false
+bool2=false
+bool3=false
+var bool4=true
+
+if strategy.position_size[1]==1 and strategy.position_size[0]==0
+    bool1:=false
+    bool2:=false
+    bool3:=false
+    bool4:=true
+
+bool1:=adx>adxLine
+bool2:=RSI<30 and ta.crossover(macdLine,signalLine)
+bool3:=RSI>70 and ta.crossunder(macdLine,signalLine)
+
+if bool1 and bool2 and bool4
+    strategy.entry("Long",strategy.long)
+if bool1 and bool3 and bool4
+    strategy.entry("Short",strategy.short)
+
+if bool1[0]==true and bool1[1]==false
+    bool3:=false
+if bool4[0]==true and bool4[1]==false
+    bool4:=false
