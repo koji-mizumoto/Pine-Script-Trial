@@ -1,0 +1,42 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kaneda_cocoroto_co
+
+// ボラティリティが低い（2%以下）時期は、大きな値動きの前の準備段階かも
+// ボラティリティが高い（4%以上）時期は、トレンドの転換点や重要な局面である可能性がある
+// ATRの20日移動平均線とのクロスで、ボラティリティの変化のタイミングを判断する
+// 必要に応じて、期間やパラメータを調整をする。
+
+//@version=6
+indicator("ボラティリティ分析", overlay=false)
+
+// パラメータ設定
+atrPeriod = input.int(14, "ATR期間", minval=1)
+// bbPeriod = input.int(20, "ボリンジャーバンド期間", minval=1)
+// bbMult = input.float(2.0, "ボリンジャーバンド標準偏差", minval=0.1)
+
+// ATRの計算
+atr = ta.atr(atrPeriod)
+atrPercent = 100 * (atr / close)  // ATRの割合（%）
+
+// ボリンジャーバンドの計算
+// basis = ta.sma(close, bbPeriod)
+// dev = ta.stdev(close, bbPeriod)
+// bbWidth = ((basis + bbMult * dev) - (basis - bbMult * dev)) / basis * 100
+
+// グラフの表示範囲を調整
+plotRange = input.float(6.0, "グラフ表示範囲（%）", minval=1.0)
+
+// ボラティリティの高低を示すバンド
+hline(0, "最小値", color=color.gray, linestyle=hline.style_dotted)
+hline(plotRange, "最大値", color=color.gray, linestyle=hline.style_dotted)
+hline(2, "低ボラティリティ", color=color.green, linestyle=hline.style_dashed)
+hline(4, "高ボラティリティ", color=color.red, linestyle=hline.style_dashed)
+
+// プロット設定を変更
+plot(atrPercent, "ATR%", color=color.blue, linewidth=2)
+// plot(bbWidth, "BBWidth", color=color.purple, linewidth=2)
+
+// 移動平均線
+atrMA = ta.sma(atrPercent, 20)
+plot(atrMA, "ATR% MA(20)", color=color.red)
+
