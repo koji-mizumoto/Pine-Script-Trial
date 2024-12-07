@@ -262,4 +262,3 @@ TradingViewではテンプレートで一目均衡表が用意されているの
 ボラティリティが低いときは、大きな値動きの前の準備段階かもしれない  
 ボラティリティが高いときは、トレンドの転換点や重要な局面である可能性がある  
 [ボラティリティ](https://www.oanda.jp/lab-education/beginners/technical_analysis/volatility/)
-
