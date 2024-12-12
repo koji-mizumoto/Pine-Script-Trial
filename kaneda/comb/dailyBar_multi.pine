@@ -108,16 +108,16 @@ table.cell(legendTable, 1, 1, compareTimeframeInput, bgcolor=color.new(color.ora
 
 // アラート条件の設定
 alertcondition(
-    buySignal,
-    title="買いシグナル",
-    message="買いシグナルが発生しました！ - {{ticker}}"
-    )
+     buySignal,
+     title="買いシグナル",
+     message="買いシグナルが発生しました！ - {{ticker}}"
+     )
 
 alertcondition(
-    sellSignal,
-    title="売りシグナル",
-    message="売りシグナルが発生しました！ - {{ticker}}"
-    )
+     sellSignal,
+     title="売りシグナル",
+     message="売りシグナルが発生しました！ - {{ticker}}"
+     )
 
 // リアルタイムアラート用（こちらは動的な文字列を使用可能）
 if (buySignal)
