@@ -1,0 +1,129 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kaneda_cocoroto_co
+
+//@version=6
+indicator("dailyBar_multi", overlay=true)
+
+// 入力パラメータ - 時間足設定
+timeframeInput = input.string(
+     "5",
+     title="ベース時間足",
+     options=["1", "3", "5", "15", "30", "45", "60", "120", "180", "240", "D", "W", "M"]
+     )
+compareTimeframeInput = input.string(
+     "10",
+     title="比較時間足",
+     options=["1", "3", "5", "10", "15", "30", "45", "60", "120", "180", "240", "D", "W", "M"]
+     )
+longTimeframeInput = input.string(
+     "D",
+     title="長期時間足",
+     options=["1", "3", "5", "15", "30", "45", "60", "120", "180", "240", "D", "W", "M"]
+     )
+
+// 入力パラメータ - その他設定
+lookbackPeriod = input.int(5, "過去のバー数", minval=1)
+shortLength = input.int(9, "短期移動平均期間", minval=1)
+longLength = input.int(26, "長期移動平均期間", minval=1)
+
+// ベース時間足のクロス計算
+shortMA = ta.sma(close, shortLength)
+longMA = ta.sma(close, longLength)
+goldCross = ta.crossover(shortMA, longMA)
+deadCross = ta.crossunder(shortMA, longMA)
+
+// 比較時間足のデータを取得して平均価格を計算
+compareClose = request.security(syminfo.tickerid, compareTimeframeInput, close)
+compareAvg = request.security(syminfo.tickerid, compareTimeframeInput, ta.sma(close, lookbackPeriod))
+
+// 長期時間足のデータを取得
+longTermClose = request.security(syminfo.tickerid, longTimeframeInput, close)
+
+// 買いシグナル条件：
+// 1. 比較時間足の平均価格が長期時間足の終値より高い
+// 2. ベース時間足でゴールデンクロスが発生
+buySignal = compareAvg > longTermClose and goldCross
+
+// 売りシグナル条件：
+// 1. 比較時間足の平均価格が長期時間足の終値より低い
+// 2. ベース時間足でデッドクロスが発生
+sellSignal = compareAvg < longTermClose and deadCross
+
+// プロット
+// 長期時間足のプロット
+plot(longTermClose, title="長期時間足終値", color=color.blue, linewidth=2)
+
+// 比較時間足の平均価格プロット
+plot(compareAvg, title="比較時間足平均価格", color=color.orange, linewidth=1)
+
+// 移動平均線のプロット
+plot(shortMA, title="短期移動平均", color=color.green, linewidth=1)
+
+plot(longMA, title="長期移動平均", color=color.red, linewidth=1)
+
+// 買いシグナルをプロット
+plotshape(
+     buySignal,
+     title="買いシグナル",
+     location=location.belowbar,
+     color=color.green,
+     style=shape.triangleup,
+     size=size.small,
+     text="GC",
+     textcolor = color.white
+     )
+
+// 売りシグナルをプロット
+plotshape(
+     sellSignal,
+     title="売りシグナル",
+     location=location.abovebar,
+     color=color.red,
+     style=shape.triangledown,
+     size=size.small,
+     text="DC",
+     textcolor = color.white
+     )
+
+// シグナル情報を表示
+var table signalTable = table.new(position.top_right, 4, 1)
+table.cell(signalTable, 0, 0, "シグナル状態：", bgcolor=color.new(color.gray, 90))
+table.cell(signalTable, 1, 0,
+     buySignal ? "買い" : sellSignal ? "売り" : "待機",
+     bgcolor=color.new(buySignal ? color.green : sellSignal ? color.red : color.gray,
+     90))
+table.cell(signalTable, 2, 0,
+     goldCross ? "GC: ✓" : deadCross ? "DC: ✓" : "－",
+     bgcolor=color.new(color.gray, 90))
+table.cell(signalTable, 3, 0,
+     "時間足: " + timeframeInput + "/" + compareTimeframeInput + "/" + longTimeframeInput,
+     bgcolor=color.new(color.gray, 90))
+
+// 凡例テーブルを追加して時間足情報を表示
+var legendTable = table.new(position.top_left, 2, 2)
+table.cell(legendTable, 0, 0, "長期時間足:", bgcolor=color.new(color.blue, 90))
+table.cell(legendTable, 1, 0, longTimeframeInput, bgcolor=color.new(color.blue, 90))
+table.cell(legendTable, 0, 1, "比較時間足:", bgcolor=color.new(color.orange, 90))
+table.cell(legendTable, 1, 1, compareTimeframeInput, bgcolor=color.new(color.orange, 90))
+
+// アラート条件の設定
+alertcondition(
+    buySignal,
+    title="買いシグナル",
+    message="買いシグナルが発生しました！ - {{ticker}}"
+    )
+
+alertcondition(
+    sellSignal,
+    title="売りシグナル",
+    message="売りシグナルが発生しました！ - {{ticker}}"
+    )
+
+// リアルタイムアラート用（こちらは動的な文字列を使用可能）
+if (buySignal)
+    alert("買いシグナルが発生しました！ - " + syminfo.ticker + " - 時間足: " +
+     timeframeInput + "/" + compareTimeframeInput + "/" + longTimeframeInput, alert.freq_once_per_bar)
+
+if (sellSignal)
+    alert("売りシグナルが発生しました！ - " + syminfo.ticker + " - 時間足: " +
+     timeframeInput + "/" + compareTimeframeInput + "/" + longTimeframeInput, alert.freq_once_per_bar)
