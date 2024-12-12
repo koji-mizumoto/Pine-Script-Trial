@@ -26,11 +26,13 @@ lookbackPeriod = input.int(5, "過去のバー数", minval=1)
 shortLength = input.int(9, "短期移動平均期間", minval=1)
 longLength = input.int(26, "長期移動平均期間", minval=1)
 
-// ベース時間足のクロス計算
+// ベース時間足のクロス計算（バックアップ有）
 shortMA = ta.sma(close, shortLength)
 longMA = ta.sma(close, longLength)
-goldCross = ta.crossover(shortMA, longMA)
-deadCross = ta.crossunder(shortMA, longMA)
+// goldCross = ta.crossover(shortMA, longMA)
+// deadCross = ta.crossunder(shortMA, longMA)
+goldCross = close > shortMA and close > longMA and open < shortMA and open < longMA
+deadCross = close < shortMA and close < longMA and open > shortMA and open > longMA
 
 // 比較時間足のデータを取得して平均価格を計算
 compareClose = request.security(syminfo.tickerid, compareTimeframeInput, close)
@@ -41,12 +43,14 @@ longTermClose = request.security(syminfo.tickerid, longTimeframeInput, close)
 
 // 買いシグナル条件：
 // 1. 比較時間足の平均価格が長期時間足の終値より高い
-// 2. ベース時間足でゴールデンクロスが発生
+// 2. ベース時間足のロウソク足が移動平均線をクロス
+// (旧条件) 2. ベース時間足でゴールデンクロスが発生
 buySignal = compareAvg > longTermClose and goldCross
 
 // 売りシグナル条件：
 // 1. 比較時間足の平均価格が長期時間足の終値より低い
-// 2. ベース時間足でデッドクロスが発生
+// 2. ベース時間足のロウソク足が移動平均線をクロス
+// (旧条件) 2. ベース時間足でデッドクロスが発生
 sellSignal = compareAvg < longTermClose and deadCross
 
 // ベース時間足のロウソク足を表示
