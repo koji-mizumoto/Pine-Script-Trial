@@ -49,6 +49,18 @@ buySignal = compareAvg > longTermClose and goldCross
 // 2. ベース時間足でデッドクロスが発生
 sellSignal = compareAvg < longTermClose and deadCross
 
+// ベース時間足のロウソク足を表示
+plotcandle(
+     open,
+     high,
+     low,
+     close,
+     title="ベース時間足",
+     color=close >= open ? color.green : color.red,
+     wickcolor=close >= open ? color.green : color.red,
+     bordercolor=close >= open ? color.green : color.red
+     )
+
 // プロット
 // 長期時間足のプロット
 plot(longTermClose, title="長期時間足終値", color=color.blue, linewidth=2)
