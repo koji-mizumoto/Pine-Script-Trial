@@ -1,0 +1,131 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kaneda_cocoroto_co
+
+//@version=6
+indicator("トレンドラインとチャネルライン", overlay = true)
+
+// 移動平均期間のパラメータ設定
+ma_length = input.int(defval = 14, title = "移動平均期間", minval = 1)
+
+// 延長するバー数のパラメータ設定
+extension_length = input.int(defval = 10 , title = "延長するバーの本数", minval = 1)
+
+// チャネルラインのオフセット（サポートライン上に追加する距離）
+channel_offset = input.float(defval = 10, title = "チャネルラインのオフセット", minval = 0.1)
+
+// トレンド判定に使用する移動平均
+ma = ta.sma(close, ma_length)
+
+var line line_obj_sup_channel_top_ext = na
+var line line_obj_res_channel_bottom_ext = na
+
+// 変数の初期化（v6より型を指定する必要がある）
+var line line_obj_sup = na
+var line line_obj_sup_ext = na
+var line line_obj_sup_channel_top = na  // サポートライン上の平行チャネルライン
+var line line_obj_res = na
+var line line_obj_res_ext = na
+var line line_obj_res_channel_bottom = na  // レジスタンスライン下の平行チャネルライン
+
+// トレンド判定（現在の価格が移動平均より上）
+is_uptrend = close > ma
+
+// （サポートライン：上昇トレンド）
+if is_uptrend and bar_index > 20
+    bullish_20 = (close[20] > open[20]) ? open[20] : na
+    bullish_1 = (close[1] > open[1]) ? open[1] : na
+
+    if not na(bullish_20) and not na(bullish_1)
+        if na(line_obj_sup)
+            line_obj_sup := line.new(x1=bar_index[20], y1=bullish_20, x2=bar_index[1], y2=bullish_1,
+             color=color.green, width=2, extend=extend.none)
+        else
+            line.set_xy1(line_obj_sup, bar_index[20], bullish_20)
+            line.set_xy2(line_obj_sup, bar_index[1], bullish_1)
+
+        // 傾きを計算
+        slope = (bullish_1 - bullish_20) / (bar_index[1] - bar_index[20])
+
+        // 延長ラインの作成または更新
+        ext_x2 = bar_index[1] + extension_length
+        ext_y2 = bullish_1 + slope * extension_length
+        if na(line_obj_sup_ext)
+            line_obj_sup_ext := line.new(
+                 x1=bar_index[1], y1=bullish_1,
+                 x2=ext_x2, y2=ext_y2,
+                 color=color.green, width=2, style=line.style_dashed)
+        else
+            line.set_xy1(line_obj_sup_ext, bar_index[1], bullish_1)
+            line.set_xy2(line_obj_sup_ext, ext_x2, ext_y2)
+
+        // サポートラインの上に平行なチャネルラインを作成（元々の位置）
+        channel_y_offset = channel_offset
+        if na(line_obj_sup_channel_top)
+            line_obj_sup_channel_top := line.new(
+                 x1=bar_index[20], y1=bullish_20 + channel_y_offset,
+                 x2=bar_index[1], y2=bullish_1 + channel_y_offset,
+                 color=color.green, width=1, style=line.style_dashed)
+        else
+            line.set_xy1(line_obj_sup_channel_top, bar_index[20], bullish_20 + channel_y_offset)
+            line.set_xy2(line_obj_sup_channel_top, bar_index[1], bullish_1 + channel_y_offset)
+
+        // サポートラインの上に平行なチャネルラインを延長部分にも作成
+        ext_y2_channel_top = bullish_1 + channel_y_offset + slope * extension_length
+        if na(line_obj_sup_channel_top_ext)
+            line_obj_sup_channel_top_ext := line.new(
+                 x1=bar_index[1], y1=bullish_1 + channel_y_offset,
+                 x2=ext_x2, y2=ext_y2_channel_top,
+                 color=color.green, width=1, style=line.style_dashed)
+        else
+            line.set_xy1(line_obj_sup_channel_top_ext, bar_index[1], bullish_1 + channel_y_offset)
+            line.set_xy2(line_obj_sup_channel_top_ext, ext_x2, ext_y2_channel_top)
+
+// （レジスタンスライン：下降トレンド）
+if not is_uptrend and bar_index > 20
+    bearish_20 = (close[20] < open[20]) ? open[20] : na
+    bearish_1 = (close[1] < open[1]) ? open[1] : na
+
+    if not na(bearish_20) and not na(bearish_1)
+        if na(line_obj_res)
+            line_obj_res := line.new(x1=bar_index[20], y1=bearish_20, x2=bar_index[1], y2=bearish_1,
+             color=color.blue, width = 1, extend=extend.none)
+        else
+            line.set_xy1(line_obj_res, bar_index[20], bearish_20)
+            line.set_xy2(line_obj_res, bar_index[1], bearish_1)
+
+        // 傾きを計算
+        slope = (bearish_1 - bearish_20) / (bar_index[1] - bar_index[20])
+
+        // 延長ラインの作成または更新
+        ext_x2 = bar_index[1] + extension_length
+        ext_y2 = bearish_1 + slope * extension_length
+        if na(line_obj_res_ext)
+            line_obj_res_ext := line.new(
+                 x1=bar_index[1], y1=bearish_1,
+                 x2=ext_x2, y2=ext_y2,
+                 color=color.blue, width=1, style=line.style_dashed)
+        else
+            line.set_xy1(line_obj_res_ext, bar_index[1], bearish_1)
+            line.set_xy2(line_obj_res_ext, ext_x2, ext_y2)
+
+        // レジスタンスラインの下に平行なチャネルラインを作成（元々の位置）
+        channel_y_offset = -channel_offset
+        if na(line_obj_res_channel_bottom)
+            line_obj_res_channel_bottom := line.new(
+                 x1=bar_index[20], y1=bearish_20 + channel_y_offset,
+                 x2=bar_index[1], y2=bearish_1 + channel_y_offset,
+                 color=color.blue, width=1, style=line.style_dashed)
+        else
+            line.set_xy1(line_obj_res_channel_bottom, bar_index[20], bearish_20 + channel_y_offset)
+            line.set_xy2(line_obj_res_channel_bottom, bar_index[1], bearish_1 + channel_y_offset)
+
+        // レジスタンスラインの下に平行なチャネルラインを延長部分にも作成
+        ext_y2_channel_bottom = bearish_1 + channel_y_offset + slope * extension_length
+        if na(line_obj_res_channel_bottom_ext)
+            line_obj_res_channel_bottom_ext := line.new(
+                 x1=bar_index[1], y1=bearish_1 + channel_y_offset,
+                 x2=ext_x2, y2=ext_y2_channel_bottom,
+                 color=color.blue, width=1, style=line.style_dashed)
+        else
+            line.set_xy1(line_obj_res_channel_bottom_ext, bar_index[1], bearish_1 + channel_y_offset)
+            line.set_xy2(line_obj_res_channel_bottom_ext, ext_x2, ext_y2_channel_bottom)
