@@ -1,0 +1,34 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kaneda_cocoroto_co
+
+// これは、シミュレーション目的で未来を予測するスクリプトです。
+// 非公開でテストをしてください。
+// 参考サイト：https://stackoverflow.com/questions/78991729/plot-hypothetical-future-bar-using-pinescript
+
+//@version=5
+indicator("未来のローソク足1 (※架空データ)",
+     overlay=true,
+     max_boxes_count = 500, max_lines_count = 500
+     )
+
+f_draw_candle(p_o, p_h, p_l, p_c, p_offset) =>
+    is_green = (p_c >= p_o)
+    candle_left = bar_index + p_offset
+    candle_right = bar_index + p_offset + 2      // candle body will be 3 candles long
+    candle_wick = int(math.avg(candle_left, candle_right))
+    candle_top = math.max(p_o, p_c)
+    candle_bottom = math.min(p_o, p_c)
+    candle_color = is_green ? #089981 : #f23645
+
+    // line.newの引数がintの制限があるため、ひげとboxの大きさが釣り合うためには横幅を多く取らざるを得ない。
+    // 計算の基準になるひげが整数の場所ではない？
+    box.new(candle_left, candle_top, candle_right, candle_bottom, candle_color, bgcolor = candle_color)
+    line.new(candle_wick, candle_top, candle_wick, p_h, color = candle_color)
+    line.new(candle_wick, candle_bottom, candle_wick, p_l, color = candle_color)
+
+if (barstate.islast)
+    f_draw_candle(open, high, low, close, 10)
+
+
+// 予測値
+plot(bar_index)

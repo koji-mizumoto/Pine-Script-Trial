@@ -1,0 +1,33 @@
+// これは、シミュレーション目的で未来を予測するスクリプトです。
+// 非公開でテストをしてください。
+// 参考サイト：https://stackoverflow.com/questions/78991729/plot-hypothetical-future-bar-using-pinescript
+
+//@version=5
+indicator("未来のローソク足3 (※架空データ)", overlay=true, max_boxes_count=20, max_lines_count=20)
+
+// パラメータ入力
+future_bars = input.int(20, title="未来のローソク足の本数", minval=1)
+transparency = input.int(80, title="透明度 (0-100)", minval=0, maxval=100)
+
+// カスタムキャンドルを描画する関数
+f_draw_candle(p_o, p_h, p_l, p_c, p_offset) =>
+    is_green = (p_c >= p_o)
+    candle_left = bar_index + p_offset
+    candle_right = candle_left + 1
+    candle_wick = math.round(candle_left + 0.5) // 近似する整数バーに中央位置を丸める
+    candle_top = math.max(p_o, p_c)
+    candle_bottom = math.min(p_o, p_c)
+    candle_color = is_green
+         ? color.new(color.rgb(8, 153, 129), transparency)
+         : color.new(color.rgb(248, 22, 41), transparency)
+
+    // キャンドルのボディ
+    box.new(candle_left, candle_top, candle_right, candle_bottom, border_color = candle_color, bgcolor = candle_color)
+
+    // 上ヒゲ
+    line.new(candle_wick, candle_top, candle_wick, p_h, color = candle_color, width=1)
+    // 下ヒゲ
+    line.new(candle_wick, candle_bottom, candle_wick, p_l, color = candle_color, width=1)
+
+// 未来のローソク足を描画
+f_draw_candle(open, high, low, close, future_bars)
