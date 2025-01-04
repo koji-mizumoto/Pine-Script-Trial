@@ -1,0 +1,33 @@
+// デバッグ用用
+//@version=5
+indicator("Fixed Difference Debug", overlay=false)
+
+// 現在のローソク足の値を取得
+current_close = close
+
+// 10本前の終値
+previous_close = close[10]
+
+fixed_difference2 = current_close - previous_close
+
+// スクリプトの実行が最初のバーでのみ計算
+var float fixed_difference = na
+if na(fixed_difference)
+    fixed_difference := current_close - previous_close
+
+// 結果をプロット
+plot(fixed_difference, color=color.green, title="Fixed Difference")
+
+// デバッグ: 値の確認用
+label.new(bar_index, high,
+     "current_close=" + str.tostring(current_close) +
+     "\nprevious_close=" + str.tostring(previous_close) +
+     "\nfixed_difference=" + str.tostring(fixed_difference),
+     color=color.red)
+
+    // デバッグ: 値の確認用
+label.new(bar_index, high,
+     "current_close=" + str.tostring(current_close) +
+     "\nprevious_close=" + str.tostring(previous_close) +
+     "\nfixed_difference=" + str.tostring(fixed_difference2),
+     color=color.green)

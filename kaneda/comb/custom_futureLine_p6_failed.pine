@@ -1,0 +1,179 @@
+//@version=5
+indicator("未来のローソク足 (現在のローソク足の右隣)", overlay=true, max_boxes_count=10, max_lines_count=10)
+
+// パラメータ入力
+future_bars = input.int(10, title="未来のローソク足の本数")
+transparency = input.int(80, title="透明度 (0-100)", minval=0, maxval=100)
+
+// パラメータで時間足を指定
+timeframe = input.timeframe("5", "Timeframe", options=["1", "5", "15", "30", "60", "240", "D", "W", "M"])
+num_past_bars = input.int(5, title="過去のローソク足データの数", minval=1)
+
+// 現在のローソク足の値を取得
+current_open = open
+current_high = high
+current_low = low
+current_close = close
+
+// ローソク足を描画する関数
+f_draw_candle(p_o, p_h, p_l, p_c, p_offset) =>
+    is_green = (p_c >= p_o)
+    color_fill = is_green ? color.new(color.green, 50) : color.new(color.red, 50)
+
+    // 値を明示的に固定（`float` 型にする）
+    o_fixed = float(p_o)
+    c_fixed = float(p_c)
+    h_fixed = float(p_h)
+    l_fixed = float(p_l)
+
+    // `bar_index` にオフセットを適用し、`int` に変換
+    left = int(bar_index + p_offset - 0.4)
+    right = int(bar_index + p_offset + 0.4)
+    mid = int(bar_index + p_offset)
+
+    // ラインを描画
+    var line_candle = line.new(na, na, na, na, width=2, color=color_fill)
+    line.set_xy1(line_candle, mid, h_fixed)
+    line.set_xy2(line_candle, mid, l_fixed)
+
+    // ボックスを描画
+    box.new(
+         left, o_fixed, // ボックス左上
+         right, c_fixed, // ボックス右下
+         bgcolor=color_fill,
+         border_width=1
+     )
+
+// f_draw_candle2(past_open, past_high, past_low, past_close, p_offset) =>
+//     is_green = (past_close >= past_open)
+//     candle_left = bar_index + p_offset  // 現在のローソク足の右隣から開始
+//     candle_right = candle_left + 1     // キャンドルのボディは1バー分の幅
+//     candle_wick = math.round(candle_left + 0.5) // 近似する整数バーに中央位置を丸める
+//     candle_top = math.max(past_open, past_close)
+//     candle_bottom = math.min(past_open, past_close)
+//     candle_color = is_green
+//           ? color.new(color.rgb(8, 153, 129), transparency)
+//           : color.new(color.rgb(242, 54, 70), transparency)
+
+//     // キャンドルのボディ
+//     box.new(candle_left, candle_top, candle_right, candle_bottom, border_color = candle_color, bgcolor = candle_color)
+
+//     // 上ヒゲ
+//     line.new(candle_wick, candle_top, candle_wick, past_high, color = candle_color, width=1)
+//     // 下ヒゲ
+//     line.new(candle_wick, candle_bottom, candle_wick, past_low, color = candle_color, width=1)
+
+// // データを取る関数
+// f_request_security_open(i) =>
+//     past_open = request.security(syminfo.tickerid, timeframe, open[i])
+// f_request_security_high(i) =>
+//     past_high = request.security(syminfo.tickerid, timeframe, high[i])
+// f_request_security_low(i) =>
+//     past_low = request.security(syminfo.tickerid, timeframe, low[i])
+// f_request_security_close(i) =>
+//     past_close = request.security(syminfo.tickerid, timeframe, close[i])
+
+// 過去のローソク足のデータを取得（未来のローソク足分を個別にリクエスト）
+// 現在のローソク足の値を最初の未来のローソク足に設定
+// ※最新のローソク足表示をリアルタイムに追従するわけではない。最新のローソク足が作られた瞬間を基準にする
+
+past_open_1 = current_open
+past_high_1 = current_high
+past_low_1 = current_low
+past_close_1 = current_close
+
+// 配列を初期化
+var past_opens = array.new_float()
+var past_highs = array.new_float()
+var past_lows = array.new_float()
+var past_closes = array.new_float()
+
+past_opens.push(current_open)
+past_highs.push(current_high)
+past_lows.push(current_low)
+past_closes.push(current_close)
+
+// 配列を更新する関数
+// ★request.security()はループで使えない制約がある -> 下記のコードで効率化しようにもエラーになる
+update_past_data(array<float> arr, series float source) =>
+    array.clear(arr)  // 配列をクリア
+    for i = 2 to num_past_bars
+        array.push(arr, request.security(syminfo.tickerid, timeframe, source))
+
+// 各データを配列に格納
+update_past_data(past_opens, open)
+update_past_data(past_highs, high)
+update_past_data(past_lows, low)
+update_past_data(past_closes, close)
+
+// 過去データから特定のローソク足を取得し、描画
+for i = 0 to array.size(past_opens) - 1
+    f_draw_candle(
+         array.get(past_opens, i),
+         array.get(past_highs, i),
+         array.get(past_lows, i),
+         array.get(past_closes, i),
+         -i
+     )
+
+// for i = 1 to num_past_bars
+//     f_draw_candle(past_opens[i], past_highs[i], past_lows[i], past_closes[i], i)
+
+
+// past_open_2 = request.security(syminfo.tickerid, timeframe, open[2])
+// past_high_2 = request.security(syminfo.tickerid, timeframe, high[2])
+// past_low_2 = request.security(syminfo.tickerid, timeframe, low[2])
+// past_close_2 = request.security(syminfo.tickerid, timeframe, close[2])
+
+// past_open_3 = request.security(syminfo.tickerid, timeframe, open[3])
+// past_high_3 = request.security(syminfo.tickerid, timeframe, high[3])
+// past_low_3 = request.security(syminfo.tickerid, timeframe, low[3])
+// past_close_3 = request.security(syminfo.tickerid, timeframe, close[3])
+
+// past_open_4 = request.security(syminfo.tickerid, timeframe, open[4])
+// past_high_4 = request.security(syminfo.tickerid, timeframe, high[4])
+// past_low_4 = request.security(syminfo.tickerid, timeframe, low[4])
+// past_close_4 = request.security(syminfo.tickerid, timeframe, close[4])
+
+// past_open_5 = request.security(syminfo.tickerid, timeframe, open[5])
+// past_high_5 = request.security(syminfo.tickerid, timeframe, high[5])
+// past_low_5 = request.security(syminfo.tickerid, timeframe, low[5])
+// past_close_5 = request.security(syminfo.tickerid, timeframe, close[5])
+
+// past_open_6 = request.security(syminfo.tickerid, timeframe, open[6])
+// past_high_6 = request.security(syminfo.tickerid, timeframe, high[6])
+// past_low_6 = request.security(syminfo.tickerid, timeframe, low[6])
+// past_close_6 = request.security(syminfo.tickerid, timeframe, close[6])
+
+// past_open_7 = request.security(syminfo.tickerid, timeframe, open[7])
+// past_high_7 = request.security(syminfo.tickerid, timeframe, high[7])
+// past_low_7 = request.security(syminfo.tickerid, timeframe, low[7])
+// past_close_7 = request.security(syminfo.tickerid, timeframe, close[7])
+
+// past_open_8 = request.security(syminfo.tickerid, timeframe, open[8])
+// past_high_8 = request.security(syminfo.tickerid, timeframe, high[8])
+// past_low_8 = request.security(syminfo.tickerid, timeframe, low[8])
+// past_close_8 = request.security(syminfo.tickerid, timeframe, close[8])
+
+// past_open_9 = request.security(syminfo.tickerid, timeframe, open[9])
+// past_high_9 = request.security(syminfo.tickerid, timeframe, high[9])
+// past_low_9 = request.security(syminfo.tickerid, timeframe, low[9])
+// past_close_9 = request.security(syminfo.tickerid, timeframe, close[9])
+
+// past_open_10 = request.security(syminfo.tickerid, timeframe, open[10])
+// past_high_10 = request.security(syminfo.tickerid, timeframe, high[10])
+// past_low_10 = request.security(syminfo.tickerid, timeframe, low[10])
+// past_close_10 = request.security(syminfo.tickerid, timeframe, close[10])
+
+// 現在のローソク足の位置を基準に過去のローソク足を描画
+// ローソク足が鏡にならないように左から古い順に並べる
+// f_draw_candle(past_open_10, past_high_10, past_low_10, past_close_10, 1)
+// f_draw_candle(past_open_9, past_high_9, past_low_9, past_close_9, 2)
+// f_draw_candle(past_open_8, past_high_8, past_low_8, past_close_8, 3)
+// f_draw_candle(past_open_7, past_high_7, past_low_7, past_close_7, 4)
+// f_draw_candle(past_open_6, past_high_6, past_low_6, past_close_6, 5)
+// f_draw_candle(past_open_5, past_high_5, past_low_5, past_close_5, 6)
+// f_draw_candle(past_open_4, past_high_4, past_low_4, past_close_4, 7)
+// f_draw_candle(past_open_3, past_high_3, past_low_3, past_close_3, 8)
+// f_draw_candle(past_open_2, past_high_2, past_low_2, past_close_2, 9)
+// f_draw_candle(past_open_1, past_high_1, past_low_1, past_close_1, 10)

@@ -1,0 +1,75 @@
+//@version=5
+indicator("未来のローソク足 (現在のローソク足の右隣)", overlay=true, max_boxes_count=10, max_lines_count=10)
+
+// パラメータ入力
+future_bars = input.int(10, title="未来のローソク足の本数")
+transparency = input.int(80, title="透明度 (0-100)", minval=0, maxval=100)
+
+// パラメータで時間足を指定
+timeframe = input.timeframe("5", "Timeframe", options=["1", "5", "15", "30", "60", "240", "D", "W", "M"])
+slide_offset = input.int(defval = 12, title = "横にずらす（微調整）", minval=10)
+
+// 現在のローソク足の値を取得
+current_open = open
+current_high = high
+current_low = low
+current_close = close
+
+// カスタムキャンドルを描画する関数
+f_draw_candle(p_o, p_h, p_l, p_c, p_offset, p_v_offset) =>
+    is_green = (p_c >= p_o)
+    candle_left = bar_index + p_offset  // 現在のローソク足の右隣から開始
+    candle_right = candle_left + 1     // キャンドルのボディは1バー分の幅
+    candle_wick = math.round(candle_left + 0.5) // 近似する整数バーに中央位置を丸める
+    candle_top = math.max(p_o, p_c)
+    candle_bottom = math.min(p_o, p_c)
+//     candle_top = math.max(p_o, p_c) + p_v_offset
+//     candle_bottom = math.min(p_o, p_c) + p_v_offset
+    candle_color = is_green
+          ? color.new(color.rgb(8, 153, 129), transparency)
+          : color.new(color.rgb(242, 54, 70), transparency)
+
+    // キャンドルのボディ
+    box.new(
+         candle_left,
+         candle_top,
+         candle_right,
+         candle_bottom,
+         border_color = candle_color,
+         bgcolor = candle_color
+         )
+
+    // 上ヒゲ
+    line.new(candle_wick, candle_top, candle_wick, p_h, color = candle_color, width=1)
+    // 下ヒゲ
+    line.new(candle_wick, candle_bottom , candle_wick, p_l, color = candle_color, width=1)
+
+// 過去のローソク足のデータを取得（未来のローソク足分を個別にリクエスト）
+// 現在のローソク足の値を最初の未来のローソク足に設定
+// request.security()は、if文、for文などのループの中では使えない。エラーになる。
+// この制限により同じコードを繰り返し冗長になる。解決方法は無いと思われる。
+past_open = request.security(syminfo.tickerid, timeframe, open[1])
+past_high = request.security(syminfo.tickerid, timeframe, high[1])
+past_low = request.security(syminfo.tickerid, timeframe, low[1])
+past_close = request.security(syminfo.tickerid, timeframe, close[1])
+
+// 10日前の終値との差分を計算
+p = ta.change(close, 10)  // 10バー前の終値と現在の終値の差分
+
+// デバッグ用
+plotshape(close, "仮", display = display.data_window)
+
+pc = p > 0
+     ? -p  // 正の場合は負に変換
+     : math.abs(p)  // 負の場合は正に変換
+
+// 現在のローソク足の位置を基準に過去のローソク足を描画
+// ローソク足が鏡にならないように左から古い順に並べる
+
+// ※10日分のローソク足を作ってから、全体を上下にシフトさせる（ずらす）という処理はできない。
+
+// box上は始値、下は終値
+// 現在1つ前の終値 => 1本先の基準線 -> ここから
+
+// f_draw_candle(past_open, past_high, past_low, past_close, 10, 35)
+f_draw_candle(past_open, past_high, past_low, past_close, slide_offset, 0)
