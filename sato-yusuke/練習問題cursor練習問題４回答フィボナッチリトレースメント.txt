@@ -1,0 +1,39 @@
+//@version=5
+indicator("Cussor test4", overlay=true)
+//練習問題4: フィボナッチリトレースメント
+//1. フィボナッチリトレースメントを自動的に描画するスクリプトを作成してください。
+//直近の高値と安値を基にフィボナッチレベルを計算し、チャートにプロットする。
+//フィボナッチレベルに価格が接触したときに「買いシグナル」または「売りシグナル」を表示する。
+
+// 高値と安値を取得
+var float highLevel = na
+var float lowLevel = na
+highLevel := ta.highest(close, 10)
+lowLevel := ta.lowest(close, 10)
+// フィボナッチリトレースメントのレベルを計算
+var float fib236 = na
+var float fib382 = na
+var float fib50 = na
+var float fib618 = na
+var float fib786 = na
+if(fib786 < close)  or (bar_index == 20)
+    fib236 := lowLevel + (highLevel - lowLevel) * 0.236
+    fib382 := lowLevel + (highLevel - lowLevel) * 0.382
+    fib50 := lowLevel + (highLevel - lowLevel) * 0.5
+    fib618 := lowLevel + (highLevel - lowLevel) * 0.618
+    fib786 := lowLevel + (highLevel - lowLevel) * 0.786
+
+// 最後のバーのインデックスを取得
+lastBarIndex = bar_index
+
+plotshape((bar_index % 1 == 0) and (fib786 < close), title="Sell Signal", location=location.belowbar, color=color.yellow, style=shape.labelup,text="SELL") 
+
+if (bar_index % 1 == 0) 
+    if(fib786 < close)
+        if (bar_index >= 20)
+// フィボナッチレベルにラインを引く（右方向に延長）
+            line.new(x1=lastBarIndex, y1=fib236, x2=lastBarIndex + 10, y2=fib236, color=color.blue, width=2)
+            line.new(x1=lastBarIndex, y1=fib382, x2=lastBarIndex + 10, y2=fib382, color=color.green, width=2)
+            line.new(x1=lastBarIndex, y1=fib50, x2=lastBarIndex + 10, y2=fib50, color=color.red, width=2)
+            line.new(x1=lastBarIndex, y1=fib618, x2=lastBarIndex + 10, y2=fib618, color=color.purple, width=2)
+            line.new(x1=lastBarIndex, y1=fib786, x2=lastBarIndex + 10, y2=fib786, color=color.orange, width=2)
