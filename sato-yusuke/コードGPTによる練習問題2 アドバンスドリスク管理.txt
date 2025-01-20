@@ -1,5 +1,5 @@
 //@version=5
-indicator("Advanced Risk Management", overlay=true)
+strategy("Advanced Risk Management", overlay=true)
 
 //問２，アドバンスドリスク管理: トレードごとのリスクを計算し、最大ドローダウンを制御するためのアドバンスドリスク管理機能を実装してください。
 
@@ -51,12 +51,9 @@ risk_amount = (account_balance * (risk_per_trade / 100))
 //投資する事ができます。
 
 //リスク額は設定しましたが、実際の動くによって、投資量を調節しています
-position_size_long = risk_amount / (stop_loss_multiplier * atr_value)
-position_size_short = risk_amount / (stop_loss_multiplier * atr_value)
-
 // 実際のポジションサイズ（レバレッジを考慮）
-position_size_long = position_size_long * leverage
-position_size_short = position_size_short * leverage
+position_size_long = risk_amount / (stop_loss_multiplier * atr_value) * leverage
+position_size_short = risk_amount / (stop_loss_multiplier * atr_value) * leverage
 
 // エントリー条件（単純な例として、買いシグナルは価格が上昇する場合）
 long_condition = ta.crossover(close, ta.sma(close, 50))
