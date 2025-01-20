@@ -1,0 +1,68 @@
+//@version=5
+indicator("Advanced Risk Management", overlay=true)
+
+//問２，アドバンスドリスク管理: トレードごとのリスクを計算し、最大ドローダウンを制御するためのアドバンスドリスク管理機能を実装してください。
+
+// パラメータ設定
+risk_per_trade = input.float(1, title="Risk Per Trade (%)", minval=0.1, step=0.1) // 1トレードあたりのリスク（%）
+account_balance = input.float(10000, title="Account Balance", minval=1) // アカウントの残高
+atr_length = input.int(14, title="ATR Length") // ATRの期間
+stop_loss_multiplier = input.float(2, title="Stop Loss Multiplier", minval=1.0) // ストップロスに対するATRの倍率
+leverage = input.int(1, title="Leverage", minval=1) // レバレッジ
+
+// ATR計算
+//ATRは価格の変動の大きさを表します。
+atr_value = ta.atr(atr_length)
+
+// ストップロスの価格計算（ATRに基づく）
+//終値がATR×倍率下がると損切りする
+stop_loss_long = close - stop_loss_multiplier * atr_value
+stop_loss_short = close + stop_loss_multiplier * atr_value
+
+// 1トレードあたりのリスク額の計算
+//総資産account_balanceに対する許容する損失risk_per_trade(%)
+risk_amount = (account_balance * (risk_per_trade / 100))
+
+//許容損失は設定しました。
+//次に一回のトレードでの取引量を設定します。
+//１回ごとの取引量を設定する事で、
+//損失を調整しています。
+
+// ポジションサイズの計算（リスク額に基づく）
+//リスクの大きさに応じて、売り買いを決めます。
+//許容リスク額をストップロス幅で割ります。
+
+//下がるとまずい額stop_loss_multiplier * atr_value
+//下がるとまずい額risk_amount 
+//qtyを決めます
+
+//risk_amount（許容するリスク額）を、
+//stop_loss_multiplier * atr_value（ストップロス幅）で割ることでポジションサイズ（取引量）が決まる理由
+//割ることで適切な取引量を計算する事ができます←なぜ
+//リスク額をストップロス幅で割ることで、「1回の取引で許容するリスク額が、
+//価格がどれだけ動いたときにどれだけのポジションを取るべきか」というバランスを取ります。
+
+//リスク額は設定しましたが、実際の動くによって、投資量を調節しています
+position_size_long = risk_amount / (stop_loss_multiplier * atr_value)
+position_size_short = risk_amount / (stop_loss_multiplier * atr_value)
+
+// 実際のポジションサイズ（レバレッジを考慮）
+position_size_long = position_size_long * leverage
+position_size_short = position_size_short * leverage
+
+// エントリー条件（単純な例として、買いシグナルは価格が上昇する場合）
+long_condition = ta.crossover(close, ta.sma(close, 50))
+short_condition = ta.crossunder(close, ta.sma(close, 50))
+
+// ポジションエントリーとエグジットのロジック
+if long_condition
+    strategy.entry("Long", strategy.long, qty=position_size_long)
+    strategy.exit("Exit Long", "Long", stop=stop_loss_long)
+
+if short_condition
+    strategy.entry("Short", strategy.short, qty=position_size_short)
+    strategy.exit("Exit Short", "Short", stop=stop_loss_short)
+
+// チャートにストップロスを描画
+plot(stop_loss_long, color=color.green, title="Stop Loss (Long)")
+plot(stop_loss_short, color=color.red, title="Stop Loss (Short)")
