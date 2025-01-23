@@ -26,6 +26,7 @@ wmaDouble = ta.wma(wmaHalf, lengthWMA)  // WMAの二重化
 // プロット（SMA、EMA、WMA、SMAの二重化、DEMA、WMAの二重化）
 plot(smaValue, color=color.blue, linewidth=2, title="SMA")
 plot(emaValue, color=color.green, linewidth=2, title="EMA")
+plot(ema2, color=color.gray, linewidth=2, title="Double EMA (ema(ema))")
 plot(wmaValue, color=color.red, linewidth=2, title="WMA")
 plot(smaDouble, color=color.yellow, linewidth=2, title="Double SMA")
 plot(demaValue, color=color.orange, linewidth=2, title="DEMA (Double EMA)")
