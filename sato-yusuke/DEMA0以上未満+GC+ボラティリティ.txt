@@ -1,6 +1,13 @@
 //@version=5
 indicator("DEMA and GC and Volatility", overlay=true)
 
+//DEMAの毎日の差額をチェックして、
+//差があるようなら、背景を緑にします。
+//ゴールデンクロスやデッドクロスも出ます。
+//ゴールデンクロスに投資するのが良いでしょうが、
+//早めに背景緑が続いた時に投資するとかなりもうかります。
+//下に勢い(変動性)も表示しています。
+
 //ゴールデンクロス、デッドクロス描画用
 [macdLine, signalLine, _] = ta.macd(close, 12, 26, 9)
 goldenCross = ta.crossover(macdLine, signalLine)
