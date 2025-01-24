@@ -1,0 +1,61 @@
+//@version=5
+indicator("Fibonacci and Stoploss", overlay=true)
+
+//ボラティリティの変動性です。
+//価格の動きの大きさを表示します。
+
+//demaの過敏性があり、動きの強弱に反応した平均線で
+//ボリンジャーを作ります。
+//ボリンジャーの過敏性をdemaで強化します
+ema1 = ta.ema(close,20)
+ema2 = ta.ema(ta.ema(close,20),20)
+dema = 2 * ema1 - ema2
+
+//標準偏差です
+stdev_value = ta.stdev(close, 20)
+
+//ボリンジャーを作ります
+upper_bb = dema + 1.5 * stdev_value
+lower_bb = dema - 1.5 * stdev_value
+plot(upper_bb,color=color.red)
+plot(lower_bb,color=color.red)
+
+//wmaの少しemaより遅くノイズが少ない平均線で
+//ケルトナーを作ります
+//wmaのケルトナーはemaのケルトナーより
+//反応が遅いのでゆっくりになります。
+wma1 = ta.wma(close,20)
+
+//偏差を求めます
+atr_value = ta.atr(20)
+
+upper_kc = dema + 1.5 * atr_value
+lower_kc = dema - 1.5 * atr_value
+plot(upper_kc,color=color.orange)
+plot(lower_kc,color=color.orange)
+
+fill(plot(upper_kc), plot(upper_bb), color=color.yellow, title="Keltner Fill")
+fill(plot(lower_bb), plot(lower_kc), color=color.yellow, title="Bollinger Fill")
+
+//価格の動きに敏感なボリンジャーから、価格の動きにゆっくりなケルトナーを引くことで、
+//変動性を表示します
+hantei = math.max(math.max(upper_kc,upper_bb) - math.min(upper_kc,upper_bb),math.max(lower_bb,lower_kc) - math.min(lower_bb,lower_kc))
+plot(hantei,color=hantei > 0.4 ? color.orange:color.blue)
+
+[macdLine, signalLine, _] = ta.macd(close, 12, 26, 9)
+goldenCross = ta.crossover(macdLine, signalLine)
+plotshape(goldenCross, location=location.belowbar, color=color.yellow, style=shape.labelup, title="Golden Cross", text="GC")
+deadCross = ta.crossunder(macdLine, signalLine)
+plotshape(deadCross, location=location.abovebar, color=color.red, style=shape.labeldown, title="Dead Cross", text="DC")
+var float stoploss1 = na
+var float stoploss2 = na
+
+if(goldenCross)
+	stoploss1 := close * 1.236
+	stoploss2 := close * 1.382
+if(deadCross)
+	stoploss1 := close * 0.764
+	stoploss2 := close * 0.618
+
+plot(stoploss1,color=color.yellow)
+plot(stoploss2,color=color.red)
