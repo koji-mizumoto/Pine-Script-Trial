@@ -1,0 +1,85 @@
+//@version=5
+strategy("移動平均線 + RSI ストラテジーテスト (目標株価付き)", overlay=true)
+
+// --- 入力パラメータ ---
+short_term_length = input.int(5, title="短期移動平均線の期間", minval=1)
+middle_term_length = input.int(25, title="中期移動平均線の期間", minval=1)
+long_term_length = input.int(75, title="長期移動平均線の期間", minval=1)
+rsiLength = input.int(14, title="RSIの期間", minval=1)
+rsiTrendThreshold = input.int(50, title="RSIトレンド閾値 (上昇トレンド判定)", minval=0, maxval=100)
+trailing_stop_percent = input.float(1.5, title="トレイリングストップ (%)", minval=0.1, maxval=10.0)
+target_profit_percent = input.float(2.0, title="目標利益率 (%)", minval=0.1, maxval=10.0)
+
+// --- バックテスト期間の設定 ---
+start_year = input.int(2024, title="バックテスト開始年", minval=1900, maxval=2100)
+start_month = input.int(1, title="バックテスト開始月", minval=1, maxval=12)
+start_day = input.int(1, title="バックテスト開始日", minval=1, maxval=31)
+end_year = input.int(2025, title="バックテスト終了年", minval=1900, maxval=2100)
+end_month = input.int(1, title="バックテスト終了月", minval=1, maxval=12)
+end_day = input.int(1, title="バックテスト終了日", minval=1, maxval=31)
+
+// --- 時間制限の計算 ---
+start_time = timestamp(start_year, start_month, start_day, 0, 0)
+end_time = timestamp(end_year, end_month, end_day, 23, 59)
+in_test_period = (time >= start_time and time <= end_time)
+
+// --- トレイリングストップ変数 ---
+var float trailing_stop = na // トレイリングストップ価格
+trail_offset = trailing_stop_percent / 100 // トレイリングストップの割合
+
+// --- 目標株価変数 ---
+var float target_price = na // 目標株価
+
+// --- 移動平均線の計算 ---
+short_term_ma = ta.sma(close, short_term_length)
+middle_term_ma = ta.sma(close, middle_term_length)
+long_term_ma = ta.sma(close, long_term_length)
+
+// --- RSIの計算 ---
+rsiValue = ta.rsi(close, rsiLength)
+
+// --- 条件判定 ---
+condition_order = short_term_ma > middle_term_ma and middle_term_ma > long_term_ma
+condition_upward = short_term_ma > short_term_ma[1] and middle_term_ma > middle_term_ma[1] and long_term_ma > long_term_ma[1]
+condition_rsi_trend = rsiValue > rsiTrendThreshold and rsiValue > rsiValue[1]
+buy_condition = condition_order and condition_upward and condition_rsi_trend and in_test_period
+sell_condition = not buy_condition and in_test_period
+
+// --- トレイリングストップと目標株価のロジック ---
+// 買いエントリー後
+if (strategy.position_size > 0)
+    // トレイリングストップ価格を更新
+    new_trailing_stop = close * (1 - trail_offset)
+    trailing_stop := na(trailing_stop) ? new_trailing_stop : math.max(trailing_stop, new_trailing_stop)
+
+    // 目標株価を設定
+    target_price := na(target_price) ? close * (1 + target_profit_percent / 100) : target_price
+
+    // 目標株価に達したらクローズ
+    if (close >= target_price)
+        strategy.close("Buy", comment="Target Profit")
+
+    // 現在価格がトレイリングストップを下回った場合にクローズ
+    if (close <= trailing_stop)
+        strategy.close("Buy", comment="Trailing Stop")
+
+// エントリー時の処理
+if (buy_condition)
+    strategy.entry("Buy", strategy.long)
+    trailing_stop := na // トレイリングストップのリセット
+    target_price := na // 目標株価のリセット
+
+// 売り条件の処理
+if (sell_condition)
+    strategy.close("Buy", comment="Sell Condition")
+    trailing_stop := na // トレイリングストップのリセット
+    target_price := na // 目標株価のリセット
+
+// --- プロット ---
+plot(trailing_stop, color=color.red, title="Trailing Stop", style=plot.style_line)
+plot(target_price, color=color.green, title="Target Price", style=plot.style_line)
+plot(short_term_ma, color=color.new(color.red, 0), linewidth=2, title="短期移動平均線")
+plot(middle_term_ma, color=color.new(color.blue, 0), linewidth=2, title="中期移動平均線")
+plot(long_term_ma, color=color.new(color.green, 0), linewidth=2, title="長期移動平均線")
+hline(rsiTrendThreshold, "RSI 閾値", color=color.gray)
+plot(rsiValue, color=color.purple, linewidth=2, title="RSI 値")

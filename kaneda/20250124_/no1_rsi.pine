@@ -1,0 +1,24 @@
+//@version=6
+indicator("Relative Strength Index (RSI)", shorttitle="RSI", overlay=false, max_bars_back=50)
+
+// RSI 計算の期間を入力可能にします（デフォルト: 14）
+rsiLength = input.int(14, title="RSI Length", minval=1)
+
+// RSI を計算
+rsiValue = ta.rsi(close, rsiLength)
+
+// レベルラインの値
+upperLevel = input.int(70, title="Overbought Level", minval=0, maxval=100)
+lowerLevel = input.int(30, title="Oversold Level", minval=0, maxval=100)
+
+// RSI をプロット
+plot(rsiValue, color=color.blue, linewidth=2, title="RSI Line")
+
+// レベルラインをプロット
+hline(upperLevel, "Overbought", color=color.red, linestyle=hline.style_dotted, linewidth=1)
+hline(lowerLevel, "Oversold", color=color.green, linestyle=hline.style_dotted, linewidth=1)
+hline(50, "Midline", color=color.gray, linestyle=hline.style_dotted, linewidth=1)
+
+// 背景を条件で塗りつぶし（オプション）
+bgcolor(rsiValue > upperLevel ? color.new(color.red, 90) : na, title="Overbought Background")
+bgcolor(rsiValue < lowerLevel ? color.new(color.green, 90) : na, title="Oversold Background")

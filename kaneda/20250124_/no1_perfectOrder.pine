@@ -1,0 +1,30 @@
+//@version=6
+indicator("短期・中期・長期の移動平均線 + 条件付き背景色", overlay=true)
+
+// --- 入力パラメータ ---
+short_term_length = input.int(5, title="短期移動平均線の期間", minval=1)
+middle_term_length = input.int(25, title="中期移動平均線の期間", minval=1)
+long_term_length = input.int(75, title="長期移動平均線の期間", minval=1)
+
+// --- 移動平均線の計算 ---
+short_term_ma = ta.sma(close, short_term_length)
+middle_term_ma = ta.sma(close, middle_term_length)
+long_term_ma = ta.sma(close, long_term_length)
+
+// --- 条件の計算 ---
+condition_order_upward = short_term_ma > middle_term_ma and middle_term_ma > long_term_ma
+condition_upward = short_term_ma > short_term_ma[1] and middle_term_ma > middle_term_ma[1] and long_term_ma > long_term_ma[1]
+highlight_condition_upward = condition_order_upward and condition_upward
+
+condition_order_downward = long_term_ma > middle_term_ma and middle_term_ma > short_term_ma
+condition_downward = short_term_ma < short_term_ma[1] and middle_term_ma < middle_term_ma[1] and long_term_ma < long_term_ma[1]
+highlight_condition_downward = condition_order_downward and condition_downward
+
+// --- 背景の色設定 ---
+bgcolor(highlight_condition_upward ? color.new(color.red, 80) : na, title="上向き条件一致時の背景色")
+bgcolor(highlight_condition_downward ? color.new(color.blue, 80) : na, title="下向き条件一致時の背景色")
+
+// --- 移動平均線の描画 ---
+plot(short_term_ma, color=color.new(color.red, 0), linewidth=2, title="短期移動平均線")
+plot(middle_term_ma, color=color.new(color.blue, 0), linewidth=2, title="中期移動平均線")
+plot(long_term_ma, color=color.new(color.green, 0), linewidth=2, title="長期移動平均線")
