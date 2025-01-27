@@ -1,0 +1,33 @@
+//@version=5
+indicator("Comparison of Moving Averages and Their Doublings", overlay=true)
+
+// 入力設定
+lengthSMA = input.int(20, title="SMA Length")
+lengthEMA = input.int(20, title="EMA Length")
+lengthWMA = input.int(20, title="WMA Length")
+
+// 移動平均の計算
+smaValue = ta.sma(close, lengthSMA)  // SMA
+emaValue = ta.ema(close, lengthEMA)  // EMA
+wmaValue = ta.wma(close, lengthWMA)  // WMA
+
+// SMAの二重化（Double SMA）
+smaDouble = ta.sma(smaValue, lengthSMA)  // SMAの二重化
+
+// DEMAの計算（EMAの二重化）
+ema1 = ta.ema(close, lengthEMA)
+ema2 = ta.ema(ema1, lengthEMA)
+demaValue = 2 * ema1 - ema2  // DEMA (EMAの二重化)
+
+// WMAの二重化
+wmaHalf = ta.wma(close, lengthWMA / 2)
+wmaDouble = ta.wma(wmaHalf, lengthWMA)  // WMAの二重化
+
+// プロット（SMA、EMA、WMA、SMAの二重化、DEMA、WMAの二重化）
+plot(smaValue, color=color.blue, linewidth=2, title="SMA")
+plot(emaValue, color=color.green, linewidth=2, title="EMA")
+plot(ema2, color=color.gray, linewidth=2, title="Double EMA (ema(ema))")
+plot(wmaValue, color=color.red, linewidth=2, title="WMA")
+plot(smaDouble, color=color.yellow, linewidth=2, title="Double SMA")
+plot(demaValue, color=color.orange, linewidth=2, title="DEMA (Double EMA)")
+plot(wmaDouble, color=color.purple, linewidth=2, title="Double WMA")

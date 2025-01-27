@@ -1,0 +1,25 @@
+//@version=5
+strategy("Trump Inauguration Buy and Sell after 1 Month", overlay=true)
+
+//問２　イベント駆動型トレード戦略
+
+//特定の経済指標やニュースイベントに基づいてトレードを行うスクリプトを作成してください。
+
+//例えば、重要な経済指標の発表時に自動的にトレードを開始し、その結果に基づいてポジションを管理するような機能を追加してください。
+
+// トランプ大統領の就任日（2017年1月20日）を指定
+inauguration_date = timestamp("GMT-5", 2017, 1, 20, 0, 0)  // ニューヨーク時間（EST）を指定
+var float buy_time = na
+// 2017年1月20日以降の最初のバーでエントリー
+if (time >= inauguration_date and time[1] < inauguration_date)
+    strategy.entry("Buy on Inauguration", strategy.long)
+    buy_time := time
+
+// エントリーしてから30日（30バー後）に売却
+exit_time = buy_time + 30 * (60 * 60 * 24 * 1000)  // 30日後（ミリ秒単位）
+if (not na(buy_time) and time >= exit_time)
+    strategy.exit("Sell after 1 month", "Buy on Inauguration", limit=close)
+
+// チャート上に購入タイミングと売却タイミングを表示
+plotshape(series=(time >= inauguration_date and time[1] < inauguration_date), location=location.belowbar, color=color.green, style=shape.labelup, title="Buy Signal")
+plotshape(series=(not na(buy_time) and time >= exit_time), location=location.abovebar, color=color.red, style=shape.labeldown, title="Sell Signal")

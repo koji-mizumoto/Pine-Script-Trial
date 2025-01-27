@@ -1,0 +1,29 @@
+//@version=5
+indicator("Bollinger Bands and Keltner Channel", overlay=true)
+
+// パラメータ設定
+length = input.int(20, title="Length")
+mult_BB = input.float(2.0, title="Bollinger Bands Multiplier")
+mult_KC = input.float(1.5, title="Keltner Channel Multiplier")
+
+// 移動平均と計算
+sma_close = ta.sma(close, length)
+tr = ta.tr(true) // トゥルーレンジ（True Range）計算
+atr = ta.sma(tr, length) // ATR（平均トゥルーレンジ）
+
+// ボリンジャーバンドの計算
+upperBB = sma_close + mult_BB * ta.stdev(close, length)
+lowerBB = sma_close - mult_BB * ta.stdev(close, length)
+
+// ケルトナーチャネルの計算
+upperKC = sma_close + mult_KC * atr
+lowerKC = sma_close - mult_KC * atr
+
+// ボリンジャーバンドとケルトナーチャネルをプロット
+plot(upperBB, color=color.blue, linewidth=2, title="Upper Bollinger Band")
+plot(lowerBB, color=color.blue, linewidth=2, title="Lower Bollinger Band")
+plot(upperKC, color=color.orange, linewidth=2, title="Upper Keltner Channel")
+plot(lowerKC, color=color.orange, linewidth=2, title="Lower Keltner Channel")
+
+// 中央の移動平均（SMA）をプロット
+plot(sma_close, color=color.gray, linewidth=1, title="SMA")
