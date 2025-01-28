@@ -1,4 +1,4 @@
-//@version=5
+//@version=6
 strategy("Adx and MACD and Stopploss(Trailing Stop)", overlay=true)
 
 length2 = input.int(14)
