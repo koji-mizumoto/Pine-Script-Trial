@@ -1,0 +1,50 @@
+//@version=5
+strategy("Adx and MACD and Stopploss(Trailing Stop)", overlay=true)
+
+length2 = input.int(14)
+
+up_move=ta.change(high)
+down_move=-ta.change(low)
+
+//価格が上昇しない時は0に設定する
+plus_dm=na(up_move) ? na : (up_move > down_move and up_move > 0 ? up_move : 0)
+minus_dm=na(down_move) ? na : (down_move > up_move and down_move > 0 ? down_move : 0)
+tr = math.max(high - low,math.max(math.abs(high - close[1]),math.abs(low - close[1])))
+
+smoothed_plus_dm = ta.sma(plus_dm,length2)
+smoothed_minus_dm = ta.sma(minus_dm,length2)
+smoothed_tr = ta.sma(tr,length2)
+
+plus_di = 100 * smoothed_plus_dm / smoothed_tr
+minus_di = 100 * smoothed_minus_dm / smoothed_tr
+dx = 100 * math.abs(plus_di - minus_di)/(plus_di + minus_di)
+adx = ta.sma(dx,length2)
+
+// ヒストグラム表示
+plot(adx, color=adx >= 25 ? color.green : color.red, style=plot.style_histogram, title="adx", linewidth=3)
+
+[short,long,signal] = ta.macd(close,12,26,9)
+
+plot(short,color=color.yellow)
+plot(long,color=color.red)
+
+plotshape(series=ta.crossover(short,long), location=location.belowbar, color=color.yellow, style=shape.labelup, title="GC", text="GC")
+plotshape(series=ta.crossunder(short,long), location=location.belowbar, color=color.red, style=shape.labelup, title="DC", text="DC")
+
+//trailing stop
+trailOffset = input.int(10)
+
+var float trailStop = na
+
+if(close >= close[1])
+    trailStop := close - trailOffset
+
+if(ta.crossover(short,long) and adx >= 25)
+    strategy.entry("long", strategy.long)
+
+plotshape(series = close < trailStop,color=color.green,location=location.abovebar,style=shape.labelup,text="Trailing Stop")
+
+if(close < trailStop)
+    strategy.close("long")
+
+plot(trailStop,color=color.orange)
