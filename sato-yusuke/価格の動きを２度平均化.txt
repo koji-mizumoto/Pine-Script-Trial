@@ -1,0 +1,24 @@
+//@version=5
+strategy("Slow Reacting Smoothed Momentum", overlay=true)
+
+// 計算に使う期間
+length = input.int(14, title="Length")
+smooth_length = input.int(20, title="Smoothing Length")  // スムージング期間をさらに長く設定
+
+// 価格変動の変化
+price_change = close - close[1]
+
+// 加重移動平均でスムージング
+smoothed_momentum = ta.ema(ta.ema(price_change, smooth_length),smooth_length)
+
+// ヒストグラム表示
+plot(smoothed_momentum * 10, color=smoothed_momentum > 0 ? color.green : color.red , style=plot.style_histogram, title="Smoothed Momentum")
+
+BUY1 = ta.crossover(smoothed_momentum,0)
+SELL1 = ta.crossunder(smoothed_momentum,0)
+
+
+if(BUY1)
+    strategy.entry("long",strategy.long)
+if(SELL1)
+    strategy.close("long")
