@@ -1,0 +1,57 @@
+//@version=6
+indicator("Ichimoku with Stochastic Momentum Index", overlay=true)
+
+// Ichimoku Cloud settings
+conversionPeriods = input.int(9, minval=1, title="Conversion Line Length")
+basePeriods = input.int(26, minval=1, title="Base Line Length")
+laggingSpan2Periods = input.int(52, minval=1, title="Leading Span B Length")
+displacement = input.int(26, minval=1, title="Lagging Span")
+
+donchian(len) => math.avg(ta.lowest(len), ta.highest(len))
+
+conversionLine = donchian(conversionPeriods)
+baseLine = donchian(basePeriods)
+leadLine1 = math.avg(conversionLine, baseLine)
+leadLine2 = donchian(laggingSpan2Periods)
+
+// Plot Ichimoku Cloud
+plot(conversionLine, color=color.new(color.blue, 0), title="Conversion Line")
+plot(baseLine, color=color.new(color.red, 0), title="Base Line")
+plot(close, offset=-displacement + 1, color=color.new(color.green, 0), title="Lagging Span")
+p1 = plot(leadLine1, offset=displacement - 1, color=color.new(color.green, 50), title="Leading Span A")
+p2 = plot(leadLine2, offset=displacement - 1, color=color.new(color.red, 50), title="Leading Span B")
+
+plot(leadLine1 > leadLine2 ? leadLine1 : leadLine2, offset=displacement - 1, title="Kumo Cloud Upper Line", display=display.none)
+plot(leadLine1 < leadLine2 ? leadLine1 : leadLine2, offset=displacement - 1, title="Kumo Cloud Lower Line", display=display.none)
+fill(p1, p2, color=leadLine1 > leadLine2 ? color.new(color.green, 90) : color.new(color.red, 90))
+
+// Calculate the angle (rate of change) of Conversion Line and Base Line
+conversionLineSlope = conversionLine - conversionLine[1]
+baseLineSlope = baseLine - baseLine[1]
+
+// Define a threshold for the slope to avoid false signals (small angle)
+slopeThreshold = input.float(1, title="Slope Threshold", minval=0.1, step=0.1) // Adjust this threshold as needed
+
+// Signal: Buy when Conversion Line crosses above Base Line and the slope of both lines is above the threshold
+goldenCrossSignal = ta.crossover(conversionLine, baseLine) and math.abs(conversionLineSlope) > slopeThreshold and math.abs(baseLineSlope) > slopeThreshold
+
+// Plot buy signal
+plotshape(goldenCrossSignal, style=shape.labelup, location=location.belowbar, color=color.new(color.green, 0), size=size.small, title="Golden Cross Signal")
+
+// Stochastic Momentum Index settings
+// SMI logic only, no drawing
+lengthK = input.int(10, "%K Length", minval=1, maxval=15000)
+lengthD = input.int(3, "%D Length", minval=1, maxval=4999)
+lengthEMA = input.int(3, "EMA Length", minval=1, maxval=4999)
+
+doubleEMA(source, length) => ta.ema(ta.ema(source, length), length)
+
+highestHigh = ta.highest(lengthK)
+lowestLow = ta.lowest(lengthK)
+highestLowestRange = highestHigh - lowestLow
+relativeRange = close - (highestHigh + lowestLow) / 2
+smi = 200 * (doubleEMA(relativeRange, lengthD) / doubleEMA(highestLowestRange, lengthD))
+
+// SMI conditions for strategy or signals
+smiOverbought = smi > 40
+smiOversold = smi < -40

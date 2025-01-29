@@ -1,0 +1,31 @@
+//@version=5
+indicator("トレンドライン設定", overlay = true)
+
+// input 期間を設定
+LEN_LEFT = input.int(15, "左側の期間", minval = 1, maxval = 30)
+LEN_RIGHT = input.int(5, "右側の期間", minval = 1, maxval = 10)
+
+pH = ta.pivothigh(LEN_LEFT, LEN_RIGHT)
+pL = ta.pivotlow(LEN_LEFT, LEN_RIGHT)
+
+// ピボット・ポイントのバー・インデックス
+pH_x1 = ta.valuewhen(pH, bar_index, 1) - LEN_RIGHT
+pH_x2 = ta.valuewhen(pH, bar_index, 0) - LEN_RIGHT
+pL_x1 = ta.valuewhen(pL, bar_index, 1) - LEN_RIGHT
+pL_x2 = ta.valuewhen(pL, bar_index, 0) - LEN_RIGHT
+// ピボット・ポイントの価格
+pH_y1 = ta.valuewhen(pH, pH, 1)
+pH_y2 = ta.valuewhen(pH, pH, 0)
+pL_y1 = ta.valuewhen(pL, pL, 1)
+pL_y2 = ta.valuewhen(pL, pL, 0)
+
+if barstate.islastconfirmedhistory
+    // 2本のライン
+    lH = line.new(pH_x1, pH_y1, pH_x2, pH_y2, extend = extend.right)
+    lL = line.new(pL_x1, pL_y1, pL_x2, pL_y2, extend = extend.right)
+    // 塗りつぶし
+    fillColor = switch
+        pH_y2 > pH_y1 and pL_y2 > pL_y1 => color.green
+        pH_y2 < pH_y1 and pL_y2 < pL_y1 => color.red
+        => color.silver
+    linefill.new(lH, lL, color.new(fillColor, 90))
