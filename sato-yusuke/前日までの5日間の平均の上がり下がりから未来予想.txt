@@ -1,8 +1,0 @@
-//@version=5
-indicator("Forecasting - Simple", overlay=true, precision=2)
-if barstate.islast
-    x1 = array.new_float()
-    for i = 0 to 5
-        x1.push(close[i] - close[i+1])
-    avg1=(array.get(x1,0)+array.get(x1,1)+array.get(x1,2)+array.get(x1,3)+array.get(x1,4))/5
-    l = line.new(bar_index + 1, close + avg1, bar_index, close, width = 4)
